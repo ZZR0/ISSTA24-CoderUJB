@@ -1,8 +1,4 @@
-"""Generate answers with GPT-4
-
-Usage:
-python3 get_api_answer.py --model gpt-3.5-turbo
-"""
+# modified from MT-Bench
 import argparse
 import json
 import os
