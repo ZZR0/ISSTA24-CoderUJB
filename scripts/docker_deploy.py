@@ -47,7 +47,7 @@ def docker_deploy(model_name_or_path, run_id, free_gpu_ids):
         "docker", "run", "-d", "--gpus", f'"{gpus}"', "--shm-size", "2g", "-p", 
         f"{port}:80", "--env", 'LOG_LEVEL="info,text_generation_router=debug"', "-v",
         f"{model_name_or_path}:/{run_id}",
-        "ghcr.io/huggingface/text-generation-inference:2.0",
+        "ghcr.io/huggingface/text-generation-inference:2.0.4",
         "--model-id", f"/{run_id}", "--num-shard", str(len(free_gpu_ids)),
         "--max-input-length=4096", "--max-total-tokens=5120",
         "--max-stop-sequences=12",

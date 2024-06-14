@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function api_gen() {
-    export OPENAI_API_BASE=''
-    export OPENAI_API_KEY=''
+    export OPENAI_API_BASE='https://api2.aigcbest.top/v1'
+    export OPENAI_API_KEY='sk-C9KfZlEi4X4q6JFY3dD40e90208948DaAe5276F118B7D254'
 
     project_dir=$(cd "$(dirname $0)"/..; pwd)
 
@@ -64,7 +64,7 @@ function tgi_gen() {
         --min_share_size $min_share_size \
         --max_gpu_nums 2
 
-    export TGI_API_URL_${run_id//-/_}=$(cat $project_dir/scripts/configs/tgi_api_urls_${mechine_id}.txt)
+    export API_URL_${run_id//-/_}=$(cat $project_dir/scripts/configs/tgi_api_urls_${mechine_id}.txt)
 
     mkdir -p $project_dir/log/$run_id/$dataset
     python code_ujb/generate_api.py \
