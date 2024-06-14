@@ -5,7 +5,9 @@ from . import (
     code_ujb_complete, 
     code_ujb_testgen, 
     code_ujb_testgenissue,
-    code_ujb_defectdetection)
+    code_ujb_defectdetection,
+    code_ujb_multiple_java,
+    code_ujb_multiple_python)
 
 TASK_REGISTRY = {
     "codeujbrepair": code_ujb_repair.CodeUJBRepair,
@@ -13,6 +15,8 @@ TASK_REGISTRY = {
     "codeujbtestgen": code_ujb_testgen.CodeUJBTestGen,
     "codeujbtestgenissue": code_ujb_testgenissue.CodeUJBTestGenIssue,
     "codeujbdefectdetection": code_ujb_defectdetection.CodeUJBDefectDetection,
+    "multiplejava": code_ujb_multiple_java.MultipleJava,
+    "multiplepython": code_ujb_multiple_python.MultiplePython,
 }
 
 ALL_TASKS = sorted(list(TASK_REGISTRY))

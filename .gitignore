@@ -1,5 +1,6 @@
 __pycache__
 *.json
+*.jsonl
 *.tmp
 *.log
 *.png

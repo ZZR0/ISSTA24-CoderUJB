@@ -110,3 +110,9 @@ e.g.,
 python code_ujb/evaluate.py --model-path gpt-3.5-turbo --model-id gpt-3.5-turbo --gen-mode chat --bench-name codeujbcomplete --num-samples 10 --load-generations-path log/gpt-3.5-turbo/codeujbcomplete/generations-chat.jsonl --eval-output-path ./log/gpt-3.5-turbo/codeujbcomplete/evaluation-chat.json
 ```
 The evaluation results will be saved to `./log/gpt-3.5-turbo/codeujbcomplete/evaluation-chat.json`
+
+### QuickStart
+```
+./scripts/run_code_ujb.sh api_gen chat multiplepython gpt-3.5-turbo gpt-3.5-turbo
+./scripts/run_code_ujb.sh eval chat multiplepython gpt-3.5-turbo gpt-3.5-turbo
+```
