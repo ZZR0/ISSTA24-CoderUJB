@@ -1,4 +1,8 @@
-# modified from MT-Bench
+"""Generate answers with GPT-4
+
+Usage:
+python3 get_api_answer.py --model gpt-3.5-turbo
+"""
 import argparse
 import json
 import os
@@ -10,10 +14,9 @@ import tqdm
 
 from code_ujb.common import (
     reorg_output_file,
-    chat_compeletion_tgi,
     chat_compeletion_openai,
+    OPENAI_MODEL_ID
 )
-from fastchat.model.model_adapter import get_conversation_template
 from code_ujb import tasks
 
 def run_generate(
@@ -35,15 +38,6 @@ def run_generate(
         pass
     
     stop_str_list = []
-    if gen_mode == "chat":
-        conv = get_conversation_template(model_id)
-        print(f"Using chat mode, and the conversation template is '{conv.name}'.")
-
-        if isinstance(conv.stop_str, str):
-            stop_str_list.append(conv.stop_str)
-        elif isinstance(conv.stop_str, list):
-            stop_str_list = conv.stop_str
-        
     n_copy = num_samples
     all_tasks = []
     for i in range(len(task_bench.get_dataset())):
@@ -88,19 +82,23 @@ def get_answer(
     save_generations_path: str,
 ):
     temperature = args.temperature
-    chat_state = None  # for palm-2 model
-        
-    conv = get_conversation_template(model)
-
-    conv.append_message(conv.roles[0], task["question"])
-    conv.append_message(conv.roles[1], None)
-
-    if model in ["gpt-3.5-turbo", "gpt-3.5-turbo-0301", "gpt-4", "gpt-4-0314",
-                   "claude-v1", "claude-instant-v1", "claude-instant-1", "claude-2",
-                   "gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-16k"]:
-        output = chat_compeletion_openai(model, conv, temperature, max_new_tokens)
+    
+    if model in OPENAI_MODEL_ID:
+        api_url = os.getenv('OPENAI_API_BASE', 'https://api.openai.com/v1')
+        api_key = os.getenv('OPENAI_API_KEY', '')
+        if api_key == "":
+            raise ValueError("Please set OPENAI_API_KEY.")
+        api_urls = [f"{api_url}::{api_key}"]
     else:
-        output = chat_compeletion_tgi(gen_mode, task, conv, temperature, max_new_tokens, stop_str_list)
+        api_urls = os.environ[f"API_URL_{task['model_id'].replace('-', '_')}"]
+        if api_urls is None:
+            raise ValueError("Please set API_URL.")
+        api_urls = [f"{url}/v1::sk-ooo" for url in api_urls.split(",")]
+        
+    question = task["question"]
+    messages = [{"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": question}]
+    output = chat_compeletion_openai(api_urls, gen_mode, model, question, messages, temperature, max_new_tokens, stop_str_list)
         
     # Dump answers
     ans = {

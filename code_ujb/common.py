@@ -1,75 +1,64 @@
-# modified from MT-Bench
 import os
 import random
-import openai
-from text_generation import Client
 import time
 import json
+from openai import OpenAI
+
+OPENAI_MODEL_ID = [
+    "gpt-3.5-turbo",
+    'gpt-3.5-turbo-0125',
+    'gpt-3.5-turbo-0301',
+    'gpt-3.5-turbo-0613',
+    'gpt-3.5-turbo-1106',
+    "gpt-3.5-turbo-16k",
+    'gpt-3.5-turbo-16k-0613',
+    'gpt-3.5-turbo-instruct',
+    'gpt-4-0125-preview',
+    'gpt-4-0613',
+    'gpt-4-1106-preview',
+    "gpt-4-turbo",
+    "gpt-4",
+    'claude-2',
+    'claude-2.0',
+    'claude-2.1',
+    'claude-3-haiku-20240307',
+    'claude-3-opus-20240229',
+    'claude-3-sonnet-20240229',
+]
 
 API_MAX_RETRY = 16
 API_RETRY_SLEEP = 10
 API_ERROR_OUTPUT = "$ERROR$"
 
-def chat_compeletion_tgi(gen_mode, task, conv, temperature, max_tokens, stop_str_list):
+def chat_compeletion_openai(api_urls, gen_mode, model, question, messages, temperature, max_tokens, stop_str_list):
     output = API_ERROR_OUTPUT
-    API_URLS = os.environ[f"TGI_API_URL_{task['model_id'].replace('-', '_')}"]
-    if API_URLS is None:
-        print("Please set TGI_API_URL.")
-    
-    API_URLS = API_URLS.split(",")
+
     for _ in range(API_MAX_RETRY):
         try:
-            api_url = random.choice(API_URLS)
-            client = Client(api_url, timeout=60)
+            api_url = random.choice(api_urls)
+            api_url, api_key = api_url.split("::")
+            client = OpenAI(
+                api_key=api_key,
+                base_url=api_url,
+            )
             if gen_mode == "chat":
-                prompt = conv.get_prompt()
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    n=1,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+                output = response.choices[0].message.content
             else:
-                prompt = task["question"]
-                
-            # response = client.generate(prompt, 
-            #                            max_new_tokens=max_tokens, 
-            #                            temperature=temperature, 
-            #                            stop_sequences=stop_str_list,
-            #                            truncate=3072)
-            # output = response.generated_text
-            
-            output = ""
-            for response in client.generate_stream(prompt, 
-                                                   max_new_tokens=max_tokens, 
-                                                   temperature=temperature, 
-                                                   stop_sequences=stop_str_list,
-                                                   truncate=3072):
-                if not response.token.special:
-                    output += response.token.text
-                
-                if task["stream_stop"].check_stop(output):
-                    break
-            
-            if gen_mode == "complete":
+                prompt = question
+                output = client.completions.create(model=model, prompt=prompt, 
+                                                    max_tokens=max_tokens, 
+                                                    temperature=temperature, 
+                                                    stop=stop_str_list)
                 output = prompt + output
             break
         except Exception as e:
-            print(type(e), e)
-            time.sleep(API_RETRY_SLEEP)
-
-    return output
-
-
-def chat_compeletion_openai(model, conv, temperature, max_tokens):
-    output = API_ERROR_OUTPUT
-    for _ in range(API_MAX_RETRY):
-        try:
-            messages = conv.to_openai_api_messages()
-            response = openai.ChatCompletion.create(
-                model=model,
-                messages=messages,
-                n=1,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-            output = response["choices"][0]["message"]["content"]
-            break
-        except openai.error.OpenAIError as e:
             print(type(e), e)
             time.sleep(API_RETRY_SLEEP)
 
@@ -96,3 +85,4 @@ def reorg_output_file(save_generations_path, num_samples):
         answer["outputs"] = answer["outputs"][:num_samples]
     
     json.dump(answers, open(save_generations_path, "w"), indent=4)
+

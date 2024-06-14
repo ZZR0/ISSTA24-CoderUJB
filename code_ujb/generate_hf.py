@@ -1,4 +1,8 @@
-# modified from MT-Bench
+"""Generate answers with local models.
+
+Usage:
+python3 gen_model_answer.py --model-path lmsys/fastchat-t5-3b-v1.0 --model-id fastchat-t5-3b-v1.0
+"""
 import argparse
 import json
 import os
@@ -8,8 +12,8 @@ import time
 import torch
 from tqdm import tqdm
 
-from fastchat.model import load_model, get_conversation_template
 from fastchat.utils import str_to_torch_dtype
+from fastchat.model import load_model
 from code_ujb.common import reorg_output_file
 from code_ujb import tasks
 
@@ -35,9 +39,6 @@ def run_generate(
     os.makedirs(os.path.dirname(save_generations_path), exist_ok=True)
     with open(save_generations_path + ".tmp", "w") as fout:
         pass
-    if gen_mode == "chat":
-        conv = get_conversation_template(model_id)
-        print(f"Using chat mode, and the conversation template is '{conv.name}'.")
     
     # Split the question file into `num_gpus` files
     assert num_gpus_total % num_gpus_per_model == 0
@@ -126,10 +127,11 @@ def get_model_answers(
         torch.manual_seed(task["task_idx"])
         
         if gen_mode == "chat":
-            conv = get_conversation_template(model_id)
-            conv.append_message(conv.roles[0], task["question"])
-            conv.append_message(conv.roles[1], None)
-            prompt = conv.get_prompt()
+            messages = [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": task["question"]}
+            ]
+            prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         elif gen_mode == "complete":
             prompt = task["question"]
         else:
@@ -166,7 +168,7 @@ def get_model_answers(
                 outputs = tokenizer.batch_decode(output_ids_list, skip_special_tokens=True)
             elif gen_mode == "chat":
                 outputs = process_chat_output(input_ids=input_ids, output_ids_list=output_ids_list, 
-                                            tokenizer=tokenizer, conv=conv)
+                                            tokenizer=tokenizer)
             else:
                 raise NotImplementedError
             
@@ -189,27 +191,30 @@ def get_model_answers(
             for outputs in tasks_outputs:
                 fout.write(json.dumps(outputs) + "\n")
 
-def process_chat_output(input_ids, output_ids_list, conv, tokenizer):
+def get_stop_str(tokenizer):
+    messages = [
+        {"role": "system", "content": "[[[SSSSSSSSSS]]]"},
+        {"role": "user", "content": "[[[UUUUUUUUUU]]]"},
+        {"role": "assistant", "content": "[[[AAAAAAAAAA]]]"},
+    ]
+    prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
+    stop_str = prompt.split("[[[AAAAAAAAAA]]]")[1].strip()
+    # stop_str = "###"
+    print("Stop string:", stop_str)
+    return stop_str
+
+def process_chat_output(input_ids, output_ids_list, tokenizer):
     outputs = []
     for output_ids in output_ids_list:
         output_ids = output_ids[len(input_ids[0]) :]
         
-        # be consistent with the template's stop_token_ids
-        if conv.stop_token_ids:
-            stop_token_ids_index = [
-                i
-                for i, id in enumerate(output_ids)
-                if id in conv.stop_token_ids
-            ]
-            if len(stop_token_ids_index) > 0:
-                output_ids = output_ids[: stop_token_ids_index[0]]
-
         output = tokenizer.decode(
             output_ids,
             spaces_between_special_tokens=False,
         )
-        if conv.stop_str and output.find(conv.stop_str) > 0:
-            output = output[: output.find(conv.stop_str)]
+        stop_str = get_stop_str(tokenizer)
+        if stop_str and output.find(stop_str) > 0:
+            output = output[: output.find(stop_str)]
         for special_token in tokenizer.special_tokens_map.values():
             if isinstance(special_token, list):
                 for special_tok in special_token:
@@ -218,7 +223,7 @@ def process_chat_output(input_ids, output_ids_list, conv, tokenizer):
                 output = output.replace(special_token, "")
         output = output.strip()
 
-        if conv.name == "xgen" and output.startswith("Assistant:"):
+        if output.startswith("Assistant:"):
             output = output.replace("Assistant:", "", 1).strip()
         outputs.append(output)
     return outputs
@@ -263,7 +268,7 @@ if __name__ == "__main__":
         "--max-input-tokens",
         type=int,
         default=4096,
-        help="The maximum number of input tokens.",
+        help="The maximum number of new generated tokens.",
     )
     parser.add_argument(
         "--max-new-tokens",
@@ -275,7 +280,7 @@ if __name__ == "__main__":
         "--batch-size",
         type=int,
         default=1,
-        help="How many completion choices to generate in one batch.",
+        help="How many completion choices to generate.",
     )
     parser.add_argument(
         "--num-samples",

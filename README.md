@@ -1,4 +1,4 @@
-# UJB
+# CoderUJB
 
 CoderUJB (Unified Java Benchmark): A new benchmark designed to evaluate LLMs across diverse Java programming tasks that are executable and reflective of actual development scenarios, acknowledging Java’s prevalence in real-world software production.
 
@@ -115,4 +115,8 @@ The evaluation results will be saved to `./log/gpt-3.5-turbo/codeujbcomplete/eva
 ```
 ./scripts/run_code_ujb.sh api_gen chat multiplepython gpt-3.5-turbo gpt-3.5-turbo
 ./scripts/run_code_ujb.sh eval chat multiplepython gpt-3.5-turbo gpt-3.5-turbo
+./scripts/run_code_ujb.sh local_gen chat multiplepython /shd/zzr/models/codellama-7b codellama-7b
+./scripts/run_code_ujb.sh tgi_gen chat multiplepython /shd/zzr/models/codellama-7b codellama-7b
+./scripts/run_code_ujb.sh eval chat multiplepython /shd/zzr/models/codellama-7b codellama-7b
+
 ```

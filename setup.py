@@ -10,8 +10,7 @@ setup(
     install_requires=[
         'transformers',
         'datasets',
-        'openai<=0.28.0',
-        'text_generation',
+        'openai',
         'fschat',
         'psutil',
         'torch',

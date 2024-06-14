@@ -24,7 +24,7 @@ function api_gen() {
         --model-id $run_id \
         --gen-mode $gen_mode \
         --bench-name $dataset \
-        --max-new-tokens 1800 \
+        --max-new-tokens 1024 \
         --temperature 0.2 \
         --num-samples $num_samples  \
         --parallel 8 \
@@ -35,6 +35,7 @@ function api_gen() {
 
 function tgi_gen() {
     project_dir=$(cd "$(dirname $0)"/..; pwd)
+    mkdir -p $project_dir/scripts/configs
     mechine_id=$(ifconfig -a | grep ether | awk '{print $2}' | head -n 1)
     docker kill $(cat $project_dir/scripts/configs/tgi_container_ids_${mechine_id}.txt)
 
@@ -61,7 +62,7 @@ function tgi_gen() {
         --api_urls $project_dir/scripts/configs/tgi_api_urls_${mechine_id}.txt \
         --container_ids $project_dir/scripts/configs/tgi_container_ids_${mechine_id}.txt \
         --min_share_size $min_share_size \
-        --max_gpu_nums 6
+        --max_gpu_nums 2
 
     export TGI_API_URL_${run_id//-/_}=$(cat $project_dir/scripts/configs/tgi_api_urls_${mechine_id}.txt)
 

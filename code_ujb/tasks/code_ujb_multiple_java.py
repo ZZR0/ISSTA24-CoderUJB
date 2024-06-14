@@ -34,8 +34,7 @@ class MultipleJava(Task):
     answers, generation settings and evaluation methods.
     """
     
-    DATASET_PATH = os.getenv("UJB_DATASET_PATH", None)
-    DATASET_PATH = DATASET_PATH if DATASET_PATH is not None else os.path.join(os.path.dirname(__file__), "../../dataset/task_multiplejava_bench.json")
+    DATASET_PATH = "ZHENGRAN/multiple-java"
 
     def __init__(self):
         super().__init__(
@@ -43,7 +42,7 @@ class MultipleJava(Task):
             requires_execution=False,
         )
         print("Using Dataset:", self.DATASET_PATH)
-        self.dataset = load_dataset("json", data_files=self.DATASET_PATH, field="multiple_java")
+        self.dataset = load_dataset(self.DATASET_PATH)
 
     def get_dataset(self):
         """Returns dataset for the task or an iterable of any object, that get_prompt can handle"""
