@@ -1,4 +1,7 @@
 # CoderUJB
+This is the official repository for CoderUJB: An Executable and Unified Java Benchmark for
+Practical Programming Scenarios, accepted to the ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA) 2024.
+
 
 CoderUJB (Unified Java Benchmark): A new benchmark designed to evaluate LLMs across diverse Java programming tasks that are executable and reflective of actual development scenarios, acknowledging Java’s prevalence in real-world software production.
 
