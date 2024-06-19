@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function api_gen() {
-    export OPENAI_API_BASE='https://api2.aigcbest.top/v1'
-    export OPENAI_API_KEY='sk-C9KfZlEi4X4q6JFY3dD40e90208948DaAe5276F118B7D254'
+    export OPENAI_API_BASE=''
+    export OPENAI_API_KEY=''
 
     project_dir=$(cd "$(dirname $0)"/..; pwd)
 

@@ -72,24 +72,6 @@ class MultiplePython(Task):
         """Builds the reference solution for the doc (sample from the test dataset)."""
         return doc["function"]
 
-    @staticmethod
-    def _stop_at_function(generation):
-        block_count, in_block, in_double_quote, in_single_quote = 0, False, False, False
-        char_idx = 0
-        for char_idx in range(len(generation)):
-            if generation[char_idx] == '"': in_double_quote = not in_double_quote
-            if generation[char_idx] == "'": in_single_quote = not in_single_quote
-            if generation[char_idx] == "{" and (not in_double_quote): 
-                block_count += 1
-                in_block = True
-            if generation[char_idx] == "}" and (not in_double_quote): 
-                block_count -= 1
-            if block_count == 0 and in_block:
-                break
-        if char_idx:
-            generation = generation[:char_idx+1]
-        return generation
-
     def postprocess_complete_generations(self, generations, idx):
         return [self.postprocess_complete_generation(gen, idx) for gen in generations]
     
