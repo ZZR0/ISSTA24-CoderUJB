@@ -92,7 +92,7 @@ python code_ujb/generate_api.py --model-path gpt-3.5-turbo --model-id gpt-3.5-tu
 The answers will be saved to `log/gpt-3.5-turbo/codeujbcomplete/generations-chat.jsonl`.
 
 
-#### Step 2. Evaluation model answers of CodeUJB
+#### Step 2. Evaluate model answers of CodeUJB
 Please make sure you have installed `defects4j` first.
 ```
 python3 code_ujb/evaluate.py \
@@ -114,20 +114,17 @@ python code_ujb/evaluate.py --model-path gpt-3.5-turbo --model-id gpt-3.5-turbo 
 ```
 The evaluation results will be saved to `./log/gpt-3.5-turbo/codeujbcomplete/evaluation-chat.json`
 
-### Humaneval & MBPP QuickStart
+### QuickStart Scripts
 ```
-# generate with openai api
+# generate and evaluate with openai api
 ./scripts/run_code_ujb.sh api_gen chat multiplepython gpt-3.5-turbo gpt-3.5-turbo
 ./scripts/run_code_ujb.sh eval chat multiplepython gpt-3.5-turbo gpt-3.5-turbo
 
-./scripts/run_code_ujb.sh api_gen chat mbpp gpt-3.5-turbo gpt-3.5-turbo
-./scripts/run_code_ujb.sh eval chat mbpp gpt-3.5-turbo gpt-3.5-turbo
-
 # generate with ray inference
-./scripts/run_code_ujb.sh local_gen chat multiplepython /shd/zzr/models/deepseekcoder-instruct-7b deepseekcoder-instruct-7b
-./scripts/run_code_ujb.sh eval chat multiplepython /shd/zzr/models/deepseekcoder-instruct-7b deepseekcoder-instruct-7b
+./scripts/run_code_ujb.sh local_gen chat multiplepython $HOME/models/deepseekcoder-instruct-7b deepseekcoder-instruct-7b
+./scripts/run_code_ujb.sh eval chat multiplepython $HOME/models/deepseekcoder-instruct-7b deepseekcoder-instruct-7b
 
 # generate with tgi inference
-./scripts/run_code_ujb.sh tgi_gen chat multiplepython /shd/zzr/models/deepseekcoder-instruct-7b deepseekcoder-instruct-7b
-./scripts/run_code_ujb.sh eval chat multiplepython /shd/zzr/models/deepseekcoder-instruct-7b deepseekcoder-instruct-7b
+./scripts/run_code_ujb.sh tgi_gen chat multiplepython $HOME/models/deepseekcoder-instruct-7b deepseekcoder-instruct-7b
+./scripts/run_code_ujb.sh eval chat multiplepython $HOME/models/deepseekcoder-instruct-7b deepseekcoder-instruct-7b
 ```

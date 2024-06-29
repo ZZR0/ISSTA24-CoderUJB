@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="code_ujb",
+    name="coderujb",
     version="0.1.0",
     description="A brief description of your package",
     author="ZhengranZeng",
     author_email="zhengranzeng@gmail.com",
-    packages=find_packages(),
+    packages=["code_parser", "code_ujb"],
     install_requires=[
         'transformers',
         'datasets',

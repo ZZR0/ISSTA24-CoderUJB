@@ -9,4 +9,4 @@ projects
 log
 log*
 *.egg-info
-datasets
+tmp

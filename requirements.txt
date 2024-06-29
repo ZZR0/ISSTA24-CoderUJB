@@ -104,3 +104,5 @@ wcwidth==0.2.13
 websockets==12.0
 xxhash==3.4.1
 yarl==1.9.4
+tree_sitter_languages==1.10.2
+tree-sitter==0.21.3

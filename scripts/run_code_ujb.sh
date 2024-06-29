@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function api_gen() {
-    export OPENAI_API_BASE=''
-    export OPENAI_API_KEY=''
+    # export OPENAI_API_BASE=''
+    # export OPENAI_API_KEY=''
 
     project_dir=$(cd "$(dirname $0)"/..; pwd)
 
