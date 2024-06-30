@@ -9,12 +9,6 @@ import traceback
 
 from tqdm import tqdm
 
-# openai.api_base = 'https://api.keya.pw/v1'
-# openai.api_key = 'sk-Ur5JEVAgcRgmvhMs880bA87cF8Db4c20BdBeAa6b41B56331'
-
-openai.api_base = 'https://api.aigcbest.top/v1'
-openai.api_key = 'sk-tFi5dr7s6tfZM9IA99570920Ea464869A88a3aB77128800b'
-
 import hashlib
 
 def robust_multiprocessing(worker, tasks):
@@ -185,44 +179,6 @@ def gen_worker(item):
     # print(task["better_comment"])
     return task
 
-def scoring_worker(item):
-    one_score_pattern_0 = re.compile("\[\[(\d+\.?\d*)\]\]")
-    one_score_pattern_1 = re.compile("\[(\d+\.?\d*)\]")
-    one_score_pattern_2 = re.compile("Rating:(\d+\.?\d*)")
-    one_score_pattern_3 = re.compile("Rating: (\d+\.?\d*)")
-    def get_score(result):
-        if result is None: return -1, ""
-        if "error" in result: return -1, ""
-        if "choices" not in result: return -1, ""
-        if len(result["choices"]) == 0: return -1, ""
-        judgment = result["choices"][0]["message"]["content"]
-        match = re.search(one_score_pattern_0, judgment)
-        if not match:
-            match = re.search(one_score_pattern_1, judgment)
-        if not match:
-            match = re.search(one_score_pattern_2, judgment)
-        if not match:
-            match = re.search(one_score_pattern_3, judgment)
-
-        if match:
-            rating = ast.literal_eval(match.groups()[0])
-        else:
-            rating = -1
-        return rating, judgment
-    
-    task, model_id, prompt = item
-    args = {
-        "model_id": model_id,
-        "temperature": 0.2,
-        "max_tokens": 1024
-    }
-    # print(prompt)
-    # input("Continue?")
-    result = call_openai_api((prompt, args))
-    # print(result)
-    task["score"], task["content_score"] = get_score(result)
-    # print(task["score"])
-    return task
 
 def get_prompt_with_comment(prompt):
     code_lines = prompt.splitlines()

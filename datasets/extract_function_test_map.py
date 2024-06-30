@@ -117,73 +117,74 @@ def get_test_relevant_methods_worker(item):
         characters = string.ascii_letters + string.digits  # 包含大写字母、小写字母和数字
         random_string = ''.join(random.choice(characters) for _ in range(length))
         return random_string
-
     item_data, test_file, file_dir, result_queue = item
-
     test_src = item_data["src_tests"]
     project_id, bug_id = item_data["project_id"], item_data["bug_id"]
     tmp_project_path = os.path.join(TMP_DIR, f"{project_id}-{bug_id}", generate_random_string(16))
-    subprocess.run(['rm', '-rf', tmp_project_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    cmd = ['defects4j', 'checkout', '-p', project_id, '-v', str(bug_id) + 'f', '-w', tmp_project_path]
-    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    
-    increment_path = os.path.join(tmp_project_path, "increment.txt")
-    with open(increment_path, 'w') as f:
-        f.writelines([file+"\n" for file in item_data["src_class_files"]])
-    
-    test_relevant_methods = []
-    test_file_path = test_file.replace(".", "/") + ".java"
-    test_code = read_file(os.path.join(tmp_project_path, test_src, test_file_path))
-    test_ast = Code_AST(code=test_code, lang="java").ast
-    test_functions = test_ast.get_functions()
-    test_functions_name = [func.get_function_name() for func in test_functions]
-    
-    # test_functions_name = random.sample(test_functions_name, 100) \
-    #                         if len(test_functions_name) > 100 else test_functions_name
-    
-    # for test_function_name in tqdm(test_functions_name, desc="Test Function"):
-    for test_function_name in test_functions_name:
-        cmd = ["defects4j", "coverage", "-w", tmp_project_path, "-t", f"{test_file}::{test_function_name}", 
-               "-i", increment_path]
-        # print(" ".join(cmd))
-        # exit()
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    try:
+        subprocess.run(['rm', '-rf', tmp_project_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cmd = ['defects4j', 'checkout', '-p', project_id, '-v', str(bug_id) + 'f', '-w', tmp_project_path]
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
-        # Specify the path to the 'coverage.xml' file
-        xml_file_path = os.path.join(tmp_project_path, "coverage.xml")
+        increment_path = os.path.join(tmp_project_path, "increment.txt")
+        with open(increment_path, 'w') as f:
+            f.writelines([file+"\n" for file in item_data["src_class_files"]])
+        
+        test_relevant_methods = []
+        test_file_path = test_file.replace(".", "/") + ".java"
+        test_code = read_file(os.path.join(tmp_project_path, test_src, test_file_path))
+        test_ast = Code_AST(code=test_code, lang="java").ast
+        test_functions = test_ast.get_functions()
+        test_functions_name = [func.get_function_name() for func in test_functions]
+        
+        # test_functions_name = random.sample(test_functions_name, 100) \
+        #                         if len(test_functions_name) > 100 else test_functions_name
+        
+        # for test_function_name in tqdm(test_functions_name, desc="Test Function"):
+        for test_function_name in test_functions_name:
+            cmd = ["defects4j", "coverage", "-w", tmp_project_path, "-t", f"{test_file}::{test_function_name}", 
+                "-i", increment_path]
+            # print(" ".join(cmd))
+            # exit()
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            
+            # Specify the path to the 'coverage.xml' file
+            xml_file_path = os.path.join(tmp_project_path, "coverage.xml")
 
-        # Load and parse the XML file
-        tree = ET.parse(xml_file_path)
-        root = tree.getroot()
+            # Load and parse the XML file
+            tree = ET.parse(xml_file_path)
+            root = tree.getroot()
 
-        # Iterate through the coverage data, searching for the target class and method
-        for package in root.findall(".//package"):
-            for class_element in package.findall(".//class"):
-                be_test_class_name = class_element.attrib["name"]
-                be_test_class_file = class_element.attrib["filename"]
-                
-                for method_element in class_element.findall(".//method"):
-                    method_name = method_element.attrib["name"]
-                    method_signature = method_element.attrib["signature"]
-                    method_line_rate = method_element.attrib["line-rate"]
-                    if float(method_line_rate) > 0:
-                        line_numbers = []
-                        for line_element in method_element.findall(".//line"):
-                            line_numbers.append(line_element.attrib["number"])
-                        if len(line_numbers) == 0: continue
-                        test_relevant_methods.append({"test_file":test_file, "test_function":test_function_name, 
-                                                      "be_test_class_name":be_test_class_name,
-                                                      "be_test_class_file":be_test_class_file,
-                                                      "be_test_function_name":method_name,
-                                                      "be_test_function_signature":method_signature,
-                                                      "line_numbers": line_numbers, 
-                                                      "method_line_rate":float(method_line_rate)})
-    item_data["test_relevant_methods"] = test_relevant_methods
-    
-    subprocess.run(['rm', '-rf', tmp_project_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
-    result_queue.put({"path":os.path.join(file_dir, "data", "func_test_map", project_id+".jsonl"), "data":item_data})
-    
+            # Iterate through the coverage data, searching for the target class and method
+            for package in root.findall(".//package"):
+                for class_element in package.findall(".//class"):
+                    be_test_class_name = class_element.attrib["name"]
+                    be_test_class_file = class_element.attrib["filename"]
+                    
+                    for method_element in class_element.findall(".//method"):
+                        method_name = method_element.attrib["name"]
+                        method_signature = method_element.attrib["signature"]
+                        method_line_rate = method_element.attrib["line-rate"]
+                        if float(method_line_rate) > 0:
+                            line_numbers = []
+                            for line_element in method_element.findall(".//line"):
+                                line_numbers.append(line_element.attrib["number"])
+                            if len(line_numbers) == 0: continue
+                            test_relevant_methods.append({"test_file":test_file, "test_function":test_function_name, 
+                                                        "be_test_class_name":be_test_class_name,
+                                                        "be_test_class_file":be_test_class_file,
+                                                        "be_test_function_name":method_name,
+                                                        "be_test_function_signature":method_signature,
+                                                        "line_numbers": line_numbers, 
+                                                        "method_line_rate":float(method_line_rate)})
+        item_data["test_relevant_methods"] = test_relevant_methods
+        
+        
+        result_queue.put({"path":os.path.join(file_dir, "data", "func_test_map", project_id+".jsonl"), "data":item_data})
+    finally:
+        subprocess.run(['rm', '-rf', tmp_project_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
 
 def process_results(result_queue, all_task_count):
     count = 0
@@ -241,7 +242,7 @@ def process_extract_test_coverage(FILE_DIR):
     # for task in tqdm(tasks, desc="Processing Test Files"):
     #     results.append(get_test_relevant_methods_worker(task))    
     
-    with ProcessPoolExecutor(max_workers=8) as executor:
+    with ProcessPoolExecutor(max_workers=32) as executor:
         # 提交任务到线程池并传递队列
         [executor.submit(get_test_relevant_methods_worker, task) for task in tasks]
 
@@ -299,12 +300,12 @@ def process_extract_mapping(FILE_DIR):
     json.dump(processed_data, open(os.path.join(FILE_DIR, 'data', "data_processed_mapping.json"), 'w'), indent=4)
 
 def main():
-    # process_extract_info(FILE_DIR)
-    # process_extract_class_info(FILE_DIR)
+    process_extract_info(FILE_DIR)
+    process_extract_class_info(FILE_DIR)
     
     process_extract_test_coverage(FILE_DIR)
     
-    # process_extract_mapping(FILE_DIR)
+    process_extract_mapping(FILE_DIR)
     
 if __name__ == '__main__':
     main()    

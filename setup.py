@@ -8,15 +8,15 @@ setup(
     author_email="zhengranzeng@gmail.com",
     packages=["code_parser", "code_ujb"],
     install_requires=[
-        'transformers',
-        'datasets',
-        'openai',
-        'fschat',
-        'psutil',
-        'torch',
-        'accelerate',
-        'chardet',
-        'javalang'
+        # 'transformers',
+        # 'datasets',
+        # 'openai',
+        # 'fschat',
+        # 'psutil',
+        # 'torch',
+        # 'accelerate',
+        # 'chardet',
+        # 'javalang'
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",

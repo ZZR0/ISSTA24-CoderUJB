@@ -9,10 +9,10 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from code_parser import Code_AST
 from tqdm import tqdm
 from transformers import AutoTokenizer
-from utils import (scoring_worker, gen_worker, check_is_complete_function,
-                   get_prompt_with_comment, pretty_comment, 
+from utils import (check_is_complete_function,
+                   get_prompt_with_comment, 
                    read_file, hash_string, get_indent,
-                   robust_multiprocessing, fast_multiprocessing)
+                   fast_multiprocessing)
 
 random.seed(42)
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
@@ -341,10 +341,6 @@ def process_get_prompt(FILE_DIR, context=None, context_length=1024, save_suffix=
             
             if becut:
                 code_context = "\n".join(code_context.split("\n")[1:])
-            if len(example["better_comment"].strip()) <= 1:
-                continue
-            # comment = example["better_comment"]
-            # comment = pretty_comment(comment, example["indent"])
             comment = example["function_comment"]
             prompt_chat = PROMPT_CHAT.format(
                     code_context=code_context,
@@ -393,7 +389,6 @@ def process_get_prompt(FILE_DIR, context=None, context_length=1024, save_suffix=
                 "class_function_signature_context": example["class_function_signature_context"],
                 "code_context": code_context,
                 "source": example["source"], "indent": example["indent"],
-                "score": example["score"],
                 "function_tested_rate": example["function_tested_rate"],
             }
 

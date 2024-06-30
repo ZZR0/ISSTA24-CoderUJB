@@ -199,7 +199,7 @@ def process_extract_info(FILE_DIR):
     # tasks = [task for task in tasks if task[1]["project_id"] == "Math" and task[1]["bug_id"] == "90"]
     # print(tasks)
     
-    # for task in tasks:
+    # for task in tqdm(tasks):
     #     processed_data.append(process_worker(*task))
         
     with ProcessPoolExecutor(max_workers=16) as executor:

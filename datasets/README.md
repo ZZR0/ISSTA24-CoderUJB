@@ -13,7 +13,15 @@ cd ISSTA24-CoderUJB
 ```bash
 python datasets/extract_defects4j_info.py
 ```
-### 从defects4j中提取每个项目的各版本数据
+### 从defects4j的项目中提取测试覆盖关系
 ```bash
-python datasets/extract_defects4j_info.py
+# 这一步将占用大量的时间（>10h），并且会同时启动大量的进程，请参考下面的链接确保你的环境支持大量进程同时运行。
+# https://stackoverflow.com/questions/32283003/python-cant-start-new-thread-100-active-threads
+python datasets/extract_function_test_map.py
+```
+
+### 构建CoderUJB-FCG（Functional Code Generation）数据集
+```bash
+# CoderUJB-FCG数据集将被储存在ISSTA24-CoderUJB/datasets/data/task_complete_bench_def.json'
+python datasets/extract_task_complete.py
 ```
