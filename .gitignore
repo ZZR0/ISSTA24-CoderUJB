@@ -11,3 +11,4 @@ log*
 *.egg-info
 tmp
 models
+configs
