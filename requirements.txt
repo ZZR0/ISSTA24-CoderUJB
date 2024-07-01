@@ -106,5 +106,6 @@ xxhash==3.4.1
 yarl==1.9.4
 tree_sitter_languages==1.10.2
 tree-sitter==0.21.3
+matplotlib==3.9.0
 beautifulsoup4==4.12.3
 markdownify==0.12.1
