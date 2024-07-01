@@ -7,6 +7,7 @@ from .safe_subprocess import run
 
 LANG_NAME = "Java"
 LANG_EXT = ".java"
+FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Following files have problems:
 # 137,
@@ -17,7 +18,7 @@ LANG_EXT = ".java"
 def eval_script(path: Path):
 
     sys_env = os.environ.copy()
-    javatuples_path = Path("/nvme/zzr/CodeUCB/code_ucb/tasks/multiple_metrics/javatuples-1.2.jar")
+    javatuples_path = os.path.join(FILE_DIR, "javatuples-1.2.jar")
 
     sys_env["CLASSPATH"] = f"{javatuples_path}"
 

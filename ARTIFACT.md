@@ -36,7 +36,7 @@ For more details on package versions, please refer to `requirements.txt`.
 
 ### 2. Download Cached Results
 
-You can download the cached results from [Zenodo](https://doi.org/10.5281/zenodo.12608143). Extract the downloaded `log.tar.gz` and move the `log` folder to the `ISSTA24-CoderUJB` directory.
+You can download the cached results from [Zenodo](https://doi.org/10.5281/zenodo.12610562). Extract the downloaded `log.tar.gz` and move the `log` folder to the `ISSTA24-CoderUJB` directory.
 
 ### 3. Running Analysis Script
 

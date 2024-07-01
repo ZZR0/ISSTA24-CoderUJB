@@ -96,7 +96,7 @@ class CodeUJBComplete(Task):
     """A task represents an entire benchmark including its dataset, problems,
     answers, generation settings, and evaluation methods.
     """
-    DATASET_PATH = "YOUR_HF_ID/code_ucb_complete"
+    DATASET_PATH = "YOUR_HF_ID/code_ujb_complete"
 
     def __init__(self):
         super().__init__(

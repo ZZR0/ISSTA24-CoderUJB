@@ -21,7 +21,7 @@ from code_ujb.tasks.multiple_metrics.evaluation import evaluate_problem
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
-class StreamStopUCBComplete():
+class StreamStopUJBComplete():
     def __init__(self, function_signature, mode="complete"):
         self.function_signature = function_signature
         self.mode = mode
@@ -67,7 +67,7 @@ class MultipleJava(Task):
         return self.get_dataset()[idx]["task_id"]
     
     def get_stream_stop(self, idx, mode="complete"):
-        return StreamStopUCBComplete(self.get_dataset()[idx]["function_signature"], mode=mode)
+        return StreamStopUJBComplete(self.get_dataset()[idx]["function_signature"], mode=mode)
     
     def get_reference(self, doc):
         """Builds the reference solution for the doc (sample from the test dataset)."""

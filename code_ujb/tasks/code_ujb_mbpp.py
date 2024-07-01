@@ -94,7 +94,7 @@ def estimate_pass_at_k(num_samples, num_correct, k):
 
     return np.array([estimator(int(n), int(c), k) for n, c in zip(num_samples_it, num_correct)])
 
-class StreamStopUCBComplete():
+class StreamStopUJBComplete():
     def __init__(self, function_signature, mode="complete"):
         self.function_signature = function_signature
         self.mode = mode
@@ -148,7 +148,7 @@ class MBPP(Task):
         return self.get_dataset()[idx]["task_id"]
     
     def get_stream_stop(self, idx, mode="complete"):
-        return StreamStopUCBComplete(self.get_dataset()[idx]["function_signature"], mode=mode)
+        return StreamStopUJBComplete(self.get_dataset()[idx]["function_signature"], mode=mode)
 
     def get_reference(self, idx):
         """Builds the reference solution for the doc (sample from the test dataset)."""

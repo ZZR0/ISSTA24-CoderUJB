@@ -63,18 +63,18 @@ def get_task_result(models, task, analyze_keys=[], result_keys=[], output_folder
 
 def draw_leida(models, tasks, print_key, output_folder="./", save_suffix="", save_file="leida.png"):
     # task_map = {
-    #     "codeucbcomplete": "Functional Code Generation",
-    #     "codeucbrepair": "Automated Program Repair",
-    #     "codeucbtestgen": "Code-based Test Generation",
-    #     "codeucbtestgenissue": "Issue-based Test Generation",
-    #     "codeucbdefectdetection": "Defect Detection"
+    #     "codeujbcomplete": "Functional Code Generation",
+    #     "codeujbrepair": "Automated Program Repair",
+    #     "codeujbtestgen": "Code-based Test Generation",
+    #     "codeujbtestgenissue": "Issue-based Test Generation",
+    #     "codeujbdefectdetection": "Defect Detection"
     # }
     task_map = {
-        "codeucbcomplete": "FCG",
-        "codeucbrepair": "APR",
-        "codeucbtestgen": "CTG",
-        "codeucbtestgenissue": "ITG",
-        "codeucbdefectdetection": "DD"
+        "codeujbcomplete": "FCG",
+        "codeujbrepair": "APR",
+        "codeujbtestgen": "CTG",
+        "codeujbtestgenissue": "ITG",
+        "codeujbdefectdetection": "DD"
     }
     
     model_map = {
@@ -207,10 +207,10 @@ def analysis_table4_result():
         "pass_all|pass@k-1", "pass_all|pass@k-10", 
         "pass_all|count"
     ]
-    get_task_result(models, "codeucbcomplete", comb_keys=comb_keys,
+    get_task_result(models, "codeujbcomplete", comb_keys=comb_keys,
                         output_folder=output_folder, save_suffix="default|2048")
     
-    get_task_result(models, "codeucbrepair", comb_keys=comb_keys, 
+    get_task_result(models, "codeujbrepair", comb_keys=comb_keys, 
                         output_folder=output_folder, save_suffix="default|2048")
     
     comb_keys = [
@@ -218,10 +218,10 @@ def analysis_table4_result():
         "pass_trigger|pass@k-1", "pass_trigger|pass@k-10", 
         "pass_trigger|count", "diff_coverage"
     ]
-    get_task_result(models, "codeucbtestgen", comb_keys=comb_keys,
+    get_task_result(models, "codeujbtestgen", comb_keys=comb_keys,
                         output_folder=output_folder, save_suffix="default|2048")
     
-    get_task_result(models, "codeucbtestgenissue", comb_keys=comb_keys,
+    get_task_result(models, "codeujbtestgenissue", comb_keys=comb_keys,
                         output_folder=output_folder, save_suffix="default|2048")
     
     comb_keys = [
@@ -229,17 +229,17 @@ def analysis_table4_result():
         "results_one|acc", "results_one|acc_w_error", 
         "results_one|precision", "results_one|recall", "results_one|f1", 
     ]
-    get_task_result(models, "codeucbdefectdetection", comb_keys=comb_keys,
+    get_task_result(models, "codeujbdefectdetection", comb_keys=comb_keys,
                         output_folder=output_folder, save_suffix="default|2048")
     
     # tasks = [
-    #     "codeucbcomplete", "codeucbrepair", "codeucbtestgen", "codeucbtestgenissue",
+    #     "codeujbcomplete", "codeujbrepair", "codeujbtestgen", "codeujbtestgenissue",
     # ]
     # print_key = {
-    #     "codeucbcomplete":"pass_all|pass@k-1",
-    #     "codeucbrepair":"pass_all|pass@k-1",
-    #     "codeucbtestgen":"pass_trigger|pass@k-1",
-    #     "codeucbtestgenissue":"pass_trigger|pass@k-1",
+    #     "codeujbcomplete":"pass_all|pass@k-1",
+    #     "codeujbrepair":"pass_all|pass@k-1",
+    #     "codeujbtestgen":"pass_trigger|pass@k-1",
+    #     "codeujbtestgenissue":"pass_trigger|pass@k-1",
     # }
     # draw_leida(models, tasks, print_key, output_folder="analysis_rq1")
 
@@ -259,16 +259,16 @@ def analysis_table5_result():
     comb_keys = [
         "pass_syntax|pass@k-1", "pass_compile|pass@k-1", 
     ]
-    get_task_result(models, "codeucbcomplete", comb_keys=comb_keys,
+    get_task_result(models, "codeujbcomplete", comb_keys=comb_keys,
                         output_folder=output_folder, save_suffix="default|2048")
     
     comb_keys = [
         "pass_syntax|pass@k-1", "pass_compile|pass@k-1", 
     ]
-    get_task_result(models, "codeucbtestgen", comb_keys=comb_keys,
+    get_task_result(models, "codeujbtestgen", comb_keys=comb_keys,
                         output_folder=output_folder, save_suffix="default|2048")
     
-    get_task_result(models, "codeucbtestgenissue", comb_keys=comb_keys,
+    get_task_result(models, "codeujbtestgenissue", comb_keys=comb_keys,
                         output_folder=output_folder, save_suffix="default|2048")
     
     
@@ -319,14 +319,14 @@ def analysis_table3_result():
     ]
     
     tasks = [
-        "codeucbcomplete", "codeucbtestgen", "codeucbrepair", "codeucbdefectdetection"
+        "codeujbcomplete", "codeujbtestgen", "codeujbrepair", "codeujbdefectdetection"
     ]
     
     comb_keys_map = {
-        "codeucbcomplete":["pass_all|pass@k-1", "pass_all|pass@k-10", "pass_all|count"],
-        "codeucbtestgen":["pass_trigger|pass@k-1", "pass_trigger|pass@k-10", "pass_trigger|count", "diff_coverage"],
-        "codeucbrepair":["pass_all|pass@k-1", "pass_all|pass@k-10", "pass_all|count"],
-        "codeucbdefectdetection":["results_one|acc_w_error", "results_one|error"],
+        "codeujbcomplete":["pass_all|pass@k-1", "pass_all|pass@k-10", "pass_all|count"],
+        "codeujbtestgen":["pass_trigger|pass@k-1", "pass_trigger|pass@k-10", "pass_trigger|count", "diff_coverage"],
+        "codeujbrepair":["pass_all|pass@k-1", "pass_all|pass@k-10", "pass_all|count"],
+        "codeujbdefectdetection":["results_one|acc_w_error", "results_one|error"],
     }
     
     suffix_list = ["default|2048", "fs1|2048", "fs4|2048",]
@@ -348,31 +348,31 @@ def analysis_figure4_result():
     ]
     
     tasks = [
-        "codeucbcomplete", "codeucbtestgen", "codeucbtestgenissue", "codeucbrepair", "codeucbdefectdetection"
+        "codeujbcomplete", "codeujbtestgen", "codeujbtestgenissue", "codeujbrepair", "codeujbdefectdetection"
     ]
     print_key = {
-        "codeucbcomplete":"pass_all|pass@k-1",
-        "codeucbrepair":"pass_all|pass@k-1",
-        "codeucbtestgen":"pass_trigger|pass@k-1",
-        "codeucbtestgenissue":"pass_trigger|pass@k-1",
-        "codeucbdefectdetection":"results_one|acc_w_error",
+        "codeujbcomplete":"pass_all|pass@k-1",
+        "codeujbrepair":"pass_all|pass@k-1",
+        "codeujbtestgen":"pass_trigger|pass@k-1",
+        "codeujbtestgenissue":"pass_trigger|pass@k-1",
+        "codeujbdefectdetection":"results_one|acc_w_error",
     }
     save_suffix_map = {
-        "codeucbcomplete":"default|2048",
-        "codeucbrepair":"default|2048",
-        "codeucbtestgen":"default|2048",
-        "codeucbtestgenissue":"default|2048",
-        "codeucbdefectdetection":"default|2048",
+        "codeujbcomplete":"default|2048",
+        "codeujbrepair":"default|2048",
+        "codeujbtestgen":"default|2048",
+        "codeujbtestgenissue":"default|2048",
+        "codeujbdefectdetection":"default|2048",
     }
     draw_leida(models, tasks, print_key, output_folder=output_folder, 
                save_suffix=save_suffix_map, save_file="leida_pass1_fixed.pdf")
     
     print_key = {
-        "codeucbcomplete":"pass_all|pass@k-10",
-        "codeucbrepair":"pass_all|pass@k-10",
-        "codeucbtestgen":"pass_trigger|pass@k-10",
-        "codeucbtestgenissue":"pass_trigger|pass@k-10",
-        "codeucbdefectdetection":"results_one|acc_w_error",
+        "codeujbcomplete":"pass_all|pass@k-10",
+        "codeujbrepair":"pass_all|pass@k-10",
+        "codeujbtestgen":"pass_trigger|pass@k-10",
+        "codeujbtestgenissue":"pass_trigger|pass@k-10",
+        "codeujbdefectdetection":"results_one|acc_w_error",
     }
     draw_leida(models, tasks, print_key, output_folder=output_folder, 
                save_suffix="default|2048", save_file="leida_pass10_fixed.pdf")

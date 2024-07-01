@@ -146,15 +146,16 @@ gen_mode=$2
 dataset=$3
 model_name_or_path=$4
 run_id=$5
+suffix='default|2048'
 
 if [ $task == "local_gen" ]; then
-    local_gen $gen_mode $dataset default $model_name_or_path $run_id
+    local_gen $gen_mode $dataset $suffix $model_name_or_path $run_id
 elif [ $task == "api_gen" ]; then
-    api_gen $gen_mode $dataset default $model_name_or_path $run_id
+    api_gen $gen_mode $dataset $suffix $model_name_or_path $run_id
 elif [ $task == "tgi_gen" ]; then
-    tgi_gen $gen_mode $dataset default $model_name_or_path $run_id
+    tgi_gen $gen_mode $dataset $suffix $model_name_or_path $run_id
 elif [ $task == "eval" ]; then
-    eval $gen_mode $dataset default $model_name_or_path $run_id
+    eval $gen_mode $dataset $suffix $model_name_or_path $run_id
 elif [ $task == "help" ]; then
     echo "./scripts/run_code_ujb.sh [local_gen|api_gen|tgi_gen|eval] [complete|chat] [codeujbrepair|codeujbcomplete|codeujbtestgen|codeujbtestgenissue|codeujbdefectdetection] model_name_or_path save_id"
 else
