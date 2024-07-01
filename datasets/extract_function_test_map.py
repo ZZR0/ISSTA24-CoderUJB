@@ -211,7 +211,7 @@ def process_results(result_queue, all_task_count):
         if isinstance(result, dict):
             with open(result["path"], "a", encoding="utf-8") as f:
                 f.write(json.dumps(result["data"], ensure_ascii=False) + "\n")
-        if count == all_task_count:
+        if count >= 0.95*all_task_count:
             print(f"{'='*10} {datetime.datetime.now()} {'='*10}")
             print(f"Finished: {count}/{all_task_count} ({count / all_task_count * 100:.2f}%)")
             break  # 如果收到 ENDING，表示没有更多的结果需要处理
@@ -242,7 +242,7 @@ def process_extract_test_coverage(FILE_DIR):
     # for task in tqdm(tasks, desc="Processing Test Files"):
     #     results.append(get_test_relevant_methods_worker(task))    
     
-    with ProcessPoolExecutor(max_workers=32) as executor:
+    with ProcessPoolExecutor(max_workers=16) as executor:
         # 提交任务到线程池并传递队列
         [executor.submit(get_test_relevant_methods_worker, task) for task in tasks]
 

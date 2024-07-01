@@ -1,13 +1,13 @@
 # CoderUJB
-This is the official repository for CoderUJB: An Executable and Unified Java Benchmark for
-Practical Programming Scenarios, accepted to the ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA) 2024.
+This is the official repository for **CoderUJB: An Executable and Unified Java Benchmark for Practical Programming Scenarios**, accepted to the ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA) 2024.
 
 
 CoderUJB (Unified Java Benchmark): A new benchmark designed to evaluate LLMs across diverse Java programming tasks that are executable and reflective of actual development scenarios, acknowledging Java’s prevalence in real-world software production.
 
 ## Contents
 - [Install](#install)
-- [CodeUJB](#mt-bench)
+- [CodeUJB](#codeujb)
+- [Artifact Evaluation](ARTIFACT.md)
 
 ## Install
 1. Install codeujb.
@@ -18,8 +18,9 @@ CoderUJB (Unified Java Benchmark): A new benchmark designed to evaluate LLMs acr
     conda activate ujb
 
     # clone and install codeujb
-    git clone https://github.com/WisdomShell/ujb.git
-    cd ujb
+    git clone https://github.com/ZZR0/ISSTA24-CoderUJB.git
+    cd ISSTA24-CoderUJB
+    pip install -r requirements.txt
     pip install -e .
     ```
     For more details packages version, please refer to `requirements.txt`.
@@ -93,7 +94,7 @@ The answers will be saved to `log/gpt-3.5-turbo/codeujbcomplete/generations-chat
 
 
 #### Step 2. Evaluate model answers of CodeUJB
-Please make sure you have installed `defects4j` first.
+Please make sure you have installed [`defects4j`](https://github.com/rjust/defects4j) first.
 ```
 python3 code_ujb/evaluate.py \
     --model-path $model_name_or_path \
@@ -115,8 +116,10 @@ python code_ujb/evaluate.py --model-path gpt-3.5-turbo --model-id gpt-3.5-turbo 
 The evaluation results will be saved to `./log/gpt-3.5-turbo/codeujbcomplete/evaluation-chat.json`
 
 ### QuickStart Scripts
-```
-# generate and evaluate with openai api
+```bash
+# generate and evaluate with openai api, please setting the Openai API key first.
+# export OPENAI_API_BASE=''
+# export OPENAI_API_KEY=''
 ./scripts/run_code_ujb.sh api_gen chat multiplepython gpt-3.5-turbo gpt-3.5-turbo
 ./scripts/run_code_ujb.sh eval chat multiplepython gpt-3.5-turbo gpt-3.5-turbo
 

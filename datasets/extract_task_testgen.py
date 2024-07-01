@@ -10,9 +10,9 @@ from tqdm import tqdm
 import chardet
 from transformers import AutoTokenizer
 
-from utils import (scoring_worker, gen_worker, get_prompt_with_comment, 
-                   pretty_comment, read_file, hash_string,
-                   get_indent, robust_multiprocessing, fast_multiprocessing)
+from utils import (get_prompt_with_comment, 
+                   read_file, hash_string,
+                   get_indent, fast_multiprocessing)
 
 random.seed(42)
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
@@ -282,11 +282,10 @@ def process_filter_prompt(FILE_DIR):
 
 
 def process_final_bench(FILE_DIR):
-    data = json.load(open(os.path.join(FILE_DIR, 'data', 'task_testgen_filtered_with_better_comment_and_score.json')))
+    data = json.load(open(os.path.join(FILE_DIR, 'data', 'task_testgen_filtered.json')))
     processed_data = []
     for prompted_example in data:
-        if prompted_example["score"] >= 7.5:
-            processed_data.append(prompted_example)
+        processed_data.append(prompted_example)
     print("Total Task Case after filtering:", len(processed_data))
     json.dump(processed_data, open(os.path.join(FILE_DIR, 'data', 'task_testgen_filtered_final.json'), 'w'), indent=4, ensure_ascii=False)
 
@@ -424,9 +423,6 @@ def process_get_prompt(FILE_DIR, context=None, context_length=1024, save_suffix=
         
         if becut:
             code_context = "\n".join(code_context.split("\n")[1:])
-        if len(example["better_comment"].strip()) <= 1:
-            continue
-        # comment = example["better_comment"]
         # comment = pretty_comment(comment, example["indent"])
         # if comment[1] != " ":
         #     print(comment)
@@ -487,7 +483,6 @@ def process_get_prompt(FILE_DIR, context=None, context_length=1024, save_suffix=
                 "classmethods": example["classmethods"],
                 "be_test_class_long_name": example["classmethods"][0]["be_test_class_name"],
                 "indent": example["indent"],
-                "score": example["score"]
             }
         
         prompted_data.append(prompted_example)
@@ -507,49 +502,6 @@ def process_get_correct_result(FILE_DIR, save_suffix=""):
         
     json.dump(correct_result, open(os.path.join(FILE_DIR, 'data', f'task_testgen_correct_result_{save_suffix}.json'), 'w'), indent=4, ensure_ascii=False)
 
-
-def generate_dataset(FILE_DIR):
-    save_suffix_list = ["01000100|3072", "11000100|3072", "01100100|3072",
-                        "01010100|3072", "01001100|3072", "01000110|3072",
-                        "01000101|3072", "11110100|3072", "01001111|3072",
-                        "11111111|3072",]
-    for save_suffix in save_suffix_list:
-        context_str, context_length = save_suffix.split("|")
-        context = {
-            "be_test_import_context": int(context_str[0]),
-            "be_test_class_signature": int(context_str[1]),
-            "be_test_class_field_context": int(context_str[2]),
-            "be_test_class_function_signature_context": int(context_str[3]),
-            "test_import_context": int(context_str[4]),
-            "test_class_signature": int(context_str[5]),
-            "test_class_field_context": int(context_str[6]),
-            "test_class_function_signature_context": int(context_str[7])
-        }
-        process_get_prompt(FILE_DIR, context, context_length=int(context_length), save_suffix=save_suffix)
-        process_get_correct_result(FILE_DIR, save_suffix=save_suffix)
-
-def generate_order_dataset(FILE_DIR):
-    save_suffix_list = ["11111111|3072|order", "11111111|2048|order",
-                        "11111111|1024|order", "11111111|512|order",]
-    for save_suffix in save_suffix_list:
-        context_str = save_suffix.split("|")[0]
-        context_length = save_suffix.split("|")[1]
-        context = {
-            "be_test_import_context": int(context_str[0]),
-            "be_test_class_signature": int(context_str[1]),
-            "be_test_class_field_context": int(context_str[2]),
-            "be_test_class_function_signature_context": int(context_str[3]),
-            "test_import_context": int(context_str[4]),
-            "test_class_signature": int(context_str[5]),
-            "test_class_field_context": int(context_str[6]),
-            "test_class_function_signature_context": int(context_str[7])
-        }
-        process_get_prompt(FILE_DIR, context, context_length=int(context_length), save_suffix=save_suffix,
-                           improve_list=["test_class_field_context", "be_test_class_field_context", 
-                                         "test_class_function_signature_context", "test_import_context", 
-                                         "be_test_import_context", "be_test_class_function_signature_context", 
-                                         "test_class_signature", "be_test_class_signature"])
-        process_get_correct_result(FILE_DIR, save_suffix=save_suffix)
 
 def generate_default_dataset(FILE_DIR):
     save_suffix_list = ["default|2048"]

@@ -84,8 +84,8 @@ if __name__ == "__main__":
         # print(bug_ids)
         project_bug_ids.extend([(project_id, bug_id) for bug_id in bug_ids])    
     
-    with ProcessPoolExecutor(max_workers=max(os.cpu_count//4, 1)) as executor:
-        # results = list(tqdm(executor.map(checkout, *zip(*project_bug_ids)), total=len(project_bug_ids), desc="Checkout"))
+    with ProcessPoolExecutor(max_workers=max(os.cpu_count()//4, 1)) as executor:
+        results = list(tqdm(executor.map(checkout, *zip(*project_bug_ids)), total=len(project_bug_ids), desc="Checkout"))
         task_info = list(tqdm(executor.map(export_info, *zip(*project_bug_ids)), total=len(project_bug_ids), desc="Export"))
     
     for project_id in project_ids:

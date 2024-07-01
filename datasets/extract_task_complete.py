@@ -410,38 +410,6 @@ def process_get_correct_result(FILE_DIR, save_suffix=""):
     json.dump(correct_result, open(os.path.join(FILE_DIR, 'data', 'task_complete_correct_result.json'), 'w'), indent=4, ensure_ascii=False)
 
 
-def generate_dataset(FILE_DIR):
-    save_suffix_list = ["0100|3072", "1100|3072", "0110|3072",
-                        "0101|3072", "1111|3072", "1111|2048",
-                        "1111|1024", "1111|512",]
-    for save_suffix in save_suffix_list:
-        context_str, context_length = save_suffix.split("|")
-        context = {
-            "import_context": int(context_str[0]),
-            "class_signature": int(context_str[1]),
-            "class_field_context": int(context_str[2]),
-            "class_function_signature_context": int(context_str[3]),
-        }
-        process_get_prompt(FILE_DIR, context, context_length=int(context_length), save_suffix=save_suffix)
-        process_get_correct_result(FILE_DIR, save_suffix=save_suffix)
-
-def generate_order_dataset(FILE_DIR):
-    save_suffix_list = ["1111|3072|order", "1111|2048|order",
-                        "1111|1024|order", "1111|512|order",]
-    for save_suffix in save_suffix_list:
-        context_str = save_suffix.split("|")[0]
-        context_length = save_suffix.split("|")[1]
-        context = {
-            "few_shot": -1,
-            "import_context": int(context_str[0]),
-            "class_signature": int(context_str[1]),
-            "class_field_context": int(context_str[2]),
-            "class_function_signature_context": int(context_str[3]),
-        }
-        process_get_prompt(FILE_DIR, context, context_length=int(context_length), save_suffix=save_suffix,
-                           improve_list=["class_function_signature_context", "class_field_context", "import_context", "class_signature"])
-        process_get_correct_result(FILE_DIR, save_suffix=save_suffix)
-
 def generate_default_dataset(FILE_DIR):
     save_suffix_list = ["default|2048"]
     for save_suffix in save_suffix_list:

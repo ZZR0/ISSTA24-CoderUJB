@@ -13,16 +13,13 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
 
-from utils import scoring_worker, gen_worker, \
-                    get_prompt_with_comment, pretty_comment, \
-                    read_file, check_is_complete_function, \
+from utils import gen_worker, read_file, check_is_complete_function, \
                     get_code_prefix, hash_string
 
 random.seed(42)
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
-def get_formatted_report_libro(report_path):
-    report = json.load(open(report_path))
+def get_formatted_report_libro(report):
     rep_title, rep_content = report["title"], report["description"]
     rep_title = BeautifulSoup(rep_title.strip(), 'html.parser').get_text()
     rep_content = md(rep_content.strip())
@@ -241,14 +238,16 @@ def process_issues_task(FILE_DIR):
     processed_tasks = []
     test_tasks = []
     data = json.load(open(os.path.join(FILE_DIR, "data", "task_testgenissue_info.json")))
+    all_report = json.load(open(os.path.join(FILE_DIR, "bug_report.json")))
+    all_report = {f"{item['project']}-{item['bug_id']}": item for item in all_report}
     for issue in tqdm(data):
         # report_path, file_type = get_raw_report(FILE_DIR, issue["project_id"], issue["bug_id"], issue["issue_url"])
         # report = get_formatted_report(report_path, file_type)
-        report_path = os.path.join(FILE_DIR, "data/bug_report", f"{issue['project_id']}-{issue['bug_id']}.json")
-        if not os.path.exists(report_path):
-            print(report_path)
+        report_key = f'{issue["project_id"]}-{issue["bug_id"]}'
+        if not report_key in all_report:
+            print(report_key)
             continue
-        report = get_formatted_report_libro(report_path)
+        report = get_formatted_report_libro(all_report[report_key])
         
         for testmethod in issue["testmethods"][:1]:
             test_tasks.append(
@@ -343,56 +342,6 @@ def process_get_better_comment(FILE_DIR, load=False, model_id="gpt-3.5-turbo"):
         task_to_data[task_id] = {"better_comment":task["better_comment"], "content_comment":task["content_comment"]}
     json.dump(task_to_data, open(os.path.join(FILE_DIR, 'data', 'task_testgenissue_better_comment_dict.json'), 'w'), indent=4, ensure_ascii=False)
 
-def process_get_task_score(FILE_DIR, load=False, model_id="gpt-3.5-turbo"):
-    data = json.load(open(os.path.join(FILE_DIR, 'data', 'task_testgenissue_filtered_with_better_comment.json')))
-    load_path = os.path.join(FILE_DIR, 'data', 'task_testgenissue_better_comment_and_score_dict.json')
-    processed_tasks = []
-    unprocessed_tasks = []
-    if load and os.path.exists(load_path):
-        task_to_data = json.load(open(load_path))
-        for example in data:
-            task_id = example["task_id"]
-            if task_id in task_to_data:
-                example["score"] = task_to_data[task_id]["score"]
-                example["content_score"] = task_to_data[task_id]["content_score"]
-                processed_tasks.append(example)
-            else:
-                unprocessed_tasks.append(example)
-    else:
-        unprocessed_tasks = data
-    
-    if len(unprocessed_tasks) != 0:
-        GEN_PROMPT = """I am designing a coding exercise for computer science students, where they will be responsible for generating Java test cases using context derived from an issued report, along with the matching function signature connoting the test cases.\n\nAs an impartial judge, your task is to assess the quality of the exercise, considering elements such as the task's difficulty level, whether it is overly simplistic or excessively challenging. Initiate your evaluation with a concise explanation while maintaining objectivity. Upon providing your explanation, assign a rating to the exercise on a scale of 1 to 10, adhering to the format "Rating: [[#]]", for example: "Rating: [[5]]".\n\n[Issue Report]\n```markdown\n{issue_report}\n```\n\n[Test Case To Generate]\n```java\n{input}\n```\n\n[The Start of Correct Answer]\n```java\n{output}\n```\n[The End of Correct Answer]"""
-        # data = json.load(open(os.path.join(FILE_DIR, 'data', 'task_testgen_filtered.json')))
-
-        tasks = []
-        for example in data:
-            function = example["function"]
-            # comment = example["function_comment"]
-            comment = example["better_comment"]
-            signature = example["function_signature"]
-            tasks.append((example, model_id, GEN_PROMPT.format(
-                                                    issue_report=example["issue_report"],
-                                                    input=f'{comment}\n{example["indent"]}{signature}',
-                                                    output=function
-                                                )))
-
-        # processed_tasks = []
-        # for task in tqdm(tasks, desc="Get Task Score"):
-        #     processed_tasks.append(scoring_worker(task))
-        
-        with ProcessPoolExecutor(max_workers=4) as executor:
-            processed_tasks = list(tqdm(executor.map(scoring_worker, tasks), total=len(tasks), desc="Get Task Score"))
-        
-        processed_tasks.sort(key=lambda x: x["score"], reverse=True)
-        
-    json.dump(processed_tasks, open(os.path.join(FILE_DIR, 'data', 'task_testgenissue_filtered_with_better_comment_and_score.json'), 'w'), indent=4, ensure_ascii=False)
-
-    task_to_data = {}
-    for task in processed_tasks:
-        task_id = task["task_id"]
-        task_to_data[task_id] = {"score":task["score"], "content_score":task["content_score"]}
-    json.dump(task_to_data, open(os.path.join(FILE_DIR, 'data', 'task_testgenissue_better_comment_and_score_dict.json'), 'w'), indent=4, ensure_ascii=False)
 
 def process_final_bench(FILE_DIR):
     data = json.load(open(os.path.join(FILE_DIR, 'data', 'task_testgenissue_filtered_with_better_comment_and_score.json')))
@@ -583,7 +532,7 @@ def process_get_prompt(FILE_DIR, context=None, context_length=1024, save_suffix=
     json.dump(dataset, open(os.path.join(FILE_DIR, 'data', f'task_testgenissue_bench_{save_suffix}.json'), 'w'), indent=4, ensure_ascii=False)
 
 def process_get_correct_result(FILE_DIR, save_suffix=""):
-    data = json.load(open(os.path.join(FILE_DIR, 'data', 'task_testgenissue_bench.json')))
+    data = json.load(open(os.path.join(FILE_DIR, 'data', f'task_testgenissue_bench_{save_suffix}.json')))
     correct_result = []
     for idx, example in enumerate(data["code_ucb_testgenissue"]):
         result = {

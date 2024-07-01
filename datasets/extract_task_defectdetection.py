@@ -411,7 +411,7 @@ def generate_default_dataset(FILE_DIR):
     context = {
         "few_shot": 4,
     }
-    process_get_prompt(FILE_DIR, context, context_length=2048, save_suffix="default|2048")
+    process_get_prompt(FILE_DIR, context, context_length=2048, save_suffix="default_table3|2048")
 
 def generate_fs_dataset(FILE_DIR):
     context = {
@@ -444,7 +444,7 @@ def generate_default_with_fs_dataset(FILE_DIR):
         "class_field_context": int(context_str[2]),
         "class_function_signature_context": int(context_str[3]),
     }
-    process_get_prompt(FILE_DIR, context, context_length=2048, save_suffix="default_fs2|2048")
+    process_get_prompt(FILE_DIR, context, context_length=2048, save_suffix="default|2048")
 
 
 def main():
