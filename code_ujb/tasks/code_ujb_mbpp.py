@@ -168,6 +168,8 @@ class MBPP(Task):
             index of doc in the dataset to which the generation belongs
             (not used for Humaneval-Task)
         """
+        generation = generation.replace(self.get_prompt_byidx(idx), "")
+        generation = generation.split("if __name__ == '__main__':")[0]
         return generation
         # prompt = self.get_prompt(self.dataset["train"][idx])
         function_signature = self.dataset["train"][idx]["function_signature"]
