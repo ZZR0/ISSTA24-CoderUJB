@@ -64,12 +64,6 @@ Below is an example of a CoderUJB-FCG task. Examples for other tasks are similar
 python datasets/extract_task_testgen.py
 ```
 
-### Construct the CoderUJB-ITG (Issue-based Test Generation) Dataset
-```bash
-# The CoderUJB-ITG dataset will be stored in 'ISSTA24-CoderUJB/datasets/data/task_testgenissue_bench_default|2048.json'
-python datasets/extract_task_testgenissue.py
-```
-
 ### Construct the CoderUJB-APR (Automated Program Repair) Dataset
 ```bash
 # The CoderUJB-APR dataset will be stored in 'ISSTA24-CoderUJB/datasets/data/task_repair_bench_default|2048.json'
@@ -80,6 +74,12 @@ python datasets/extract_task_repair.py
 ```bash
 # The CoderUJB-DD dataset will be stored in 'ISSTA24-CoderUJB/datasets/data/task_defectdetection_bench_default|2048.json'
 python datasets/extract_task_defectdetection.py
+```
+
+### Construct the CoderUJB-ITG (Issue-based Test Generation) Dataset
+```bash
+# The CoderUJB-ITG dataset will be stored in 'ISSTA24-CoderUJB/datasets/data/task_testgenissue_bench_default|2048.json'
+python datasets/extract_task_testgenissue.py
 ```
 
 ### Upload the Data to Hugging Face

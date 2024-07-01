@@ -63,7 +63,7 @@ def process_issues_info(FILE_DIR):
     all_issue_tests = []
     
     data = json.load(open(os.path.join(FILE_DIR, "data", "task_repair_bench_default|2048.json")))
-    for example in tqdm(data["code_ucb_repair"]):
+    for example in tqdm(data["code_ujb_repair"]):
         example_id = f"{example['project']}-{example['bug_id']}"
         
         testmethods = example["testmethods"]
@@ -528,13 +528,13 @@ def process_get_prompt(FILE_DIR, context=None, context_length=1024, save_suffix=
         
         prompted_data.append(prompted_example)
     prompted_data.sort(key=lambda x: x["task_id"])
-    dataset = {"code_ucb_testgenissue": prompted_data}
+    dataset = {"code_ujb_testgenissue": prompted_data}
     json.dump(dataset, open(os.path.join(FILE_DIR, 'data', f'task_testgenissue_bench_{save_suffix}.json'), 'w'), indent=4, ensure_ascii=False)
 
 def process_get_correct_result(FILE_DIR, save_suffix=""):
     data = json.load(open(os.path.join(FILE_DIR, 'data', f'task_testgenissue_bench_{save_suffix}.json')))
     correct_result = []
-    for idx, example in enumerate(data["code_ucb_testgenissue"]):
+    for idx, example in enumerate(data["code_ujb_testgenissue"]):
         result = {
             "task_id": idx,
             "outputs": [example["prompt_complete_without_signature"] + example["function"]]*10

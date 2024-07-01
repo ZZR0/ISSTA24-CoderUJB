@@ -487,13 +487,13 @@ def process_get_prompt(FILE_DIR, context=None, context_length=1024, save_suffix=
         
         prompted_data.append(prompted_example)
     prompted_data.sort(key=lambda x: x["task_id"])
-    dataset = {"code_ucb_testgen": prompted_data}
+    dataset = {"code_ujb_testgen": prompted_data}
     json.dump(dataset, open(os.path.join(FILE_DIR, 'data', f'task_testgen_bench_{save_suffix}.json'), 'w'), indent=4, ensure_ascii=False)
 
 def process_get_correct_result(FILE_DIR, save_suffix=""):
     data = json.load(open(os.path.join(FILE_DIR, 'data', f'task_testgen_bench_{save_suffix}.json')))
     correct_result = []
-    for idx, example in enumerate(data["code_ucb_testgen"]):
+    for idx, example in enumerate(data["code_ujb_testgen"]):
         result = {
             "task_id": idx,
             "outputs": [example["prompt_complete_with_comment"] + "\n" + example["function"]]*10

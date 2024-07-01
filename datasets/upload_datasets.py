@@ -9,7 +9,11 @@ def upload(file_path, hf_repo_id):
     dataset = load_dataset("json", data_files=file_path, field=field)
     api = HfApi()
     api.create_repo(repo_id=hf_repo_id, repo_type="dataset")
-    dataset.push_to_hub(repo_id)
+    dataset.push_to_hub(hf_repo_id)
+
+def download(file_path, hf_repo_id, save_key):
+    dataset = load_dataset(hf_repo_id)["train"]
+    json.dump({save_key: [data for data in dataset]}, open(file_path, 'w'))
 
 if __name__ == "__main__":
     repo_id = "YOUR_HF_ID/code_ujb_complete"
@@ -31,4 +35,3 @@ if __name__ == "__main__":
     repo_id = "YOUR_HF_ID/code_ujb_defectdetection"
     file_path = os.path.join(FILE_DIR, 'task_defectdetection_bench_default|2048.json')
     upload(file_path, repo_id)
-

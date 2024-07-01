@@ -382,7 +382,7 @@ def process_get_prompt(FILE_DIR, context=None, context_length=1024, save_suffix=
         prompted_data.append(prompted_example)
         
     prompted_data.sort(key=lambda x: x["task_id"])
-    dataset = {"code_ucb_defectdetection": prompted_data}
+    dataset = {"code_ujb_defectdetection": prompted_data}
     json.dump(dataset, open(os.path.join(FILE_DIR, 'data', f'task_defectdetection_bench_{save_suffix}.json'), 'w'), indent=4, ensure_ascii=False)
     
 
