@@ -179,13 +179,27 @@ class MBPP(Task):
         for stop_word in self.stop_words:
             generation = generation.split(stop_word)[0]
         return function_signature + generation
-    
+
     def postprocess_chat_generation(self, generation, idx):
-        try:
-            code_block: str = re.findall(f'```python\n(.*?)```', generation, re.DOTALL | re.IGNORECASE)[0]
-            generation = code_block
-        except Exception as ex:
-            print("Failed to extract codeblock:\n{}".format(generation))
+        def extract_code_block(gen, pattern):
+            try:
+                code_block = re.findall(pattern, gen, re.DOTALL | re.IGNORECASE)[0]
+                return code_block
+            except (IndexError, TypeError):
+                return None
+        
+        patterns = [
+            r'```python\n(.*?)```',
+            r'```\n(.*?)```',
+            r'\[PYTHON\]\n(.*?)\[/PYTHON\]'
+        ]
+        
+        for pattern in patterns:
+            code_block = extract_code_block(generation, pattern)
+            if code_block is not None:
+                return code_block
+        if generation is None:
+            return "$ERROR$"
         return generation
     
         def _pure(code):
@@ -198,9 +212,9 @@ class MBPP(Task):
             star_code = False
             code = []
             for line in output.splitlines():
-                if line.startswith("```") and star_code == False:
+                if (line.startswith("```") or line.startswith("[PYTHON]")) and star_code == False:
                     star_code = True
-                elif line.startswith("```") and star_code == True:
+                elif (line.startswith("```") or line.startswith("[/PYTHON]")) and star_code == True:
                     star_code = False
                     codes.append("\n".join(code[1:]))
                     code = []
