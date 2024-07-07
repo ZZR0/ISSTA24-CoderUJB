@@ -202,53 +202,6 @@ class MBPP(Task):
             return "$ERROR$"
         return generation
     
-        def _pure(code):
-            code = code.replace(" ","").replace("\n","").replace("\t","")
-            code = code.replace(":","").replace("(","").replace(")","")
-            code = code.replace(",","").replace("{","").replace("}","")
-            return code
-        def parse_chat_python(output, signature):
-            codes = []
-            star_code = False
-            code = []
-            for line in output.splitlines():
-                if (line.startswith("```") or line.startswith("[PYTHON]")) and star_code == False:
-                    star_code = True
-                elif (line.startswith("```") or line.startswith("[/PYTHON]")) and star_code == True:
-                    star_code = False
-                    codes.append("\n".join(code[1:]))
-                    code = []
-                
-                if star_code:
-                    code.append(line)
-            
-            if code:
-                codes.append("\n".join(code[1:]))
-            
-            results = ["$ERROR$"]
-            pure_signature = _pure(signature.split("(")[0])
-            for code in codes:
-                result_lines = []
-                star_function = False
-                stop_function = False
-                for line in code.splitlines():
-                    pure_line = _pure(line)
-                    if pure_signature in pure_line:
-                        star_function = True
-                    if star_function and line.startswith("    return"):
-                        result_lines.append(line)
-                        stop_function = True
-                    if star_function and not stop_function:
-                        result_lines.append(line)
-                    if stop_function:
-                        break
-                result = "\n".join(result_lines)
-                results.append(result)
-            results.sort(key=len)
-            return results[-1]
-        
-        generation = parse_chat_python(generation, self.dataset["train"][idx]["function_signature"])
-        return generation
     
     def evaluate(self, generations):
         # generations = generations[:10]

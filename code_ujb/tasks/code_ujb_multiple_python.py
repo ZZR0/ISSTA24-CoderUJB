@@ -11,6 +11,7 @@ Homepage: https://github.com/openai/human-eval
 import json
 import os
 import tempfile
+import re
 import numpy as np
 from tqdm import tqdm
 from pathlib import Path
@@ -96,56 +97,32 @@ class MultiplePython(Task):
         return prefix + function_signature + generation
 
     def postprocess_chat_generation(self, generation, idx):
-        def _pure(code):
-            code = code.replace(" ","").replace("\n","").replace("\t","")
-            code = code.replace(":","").replace("(","").replace(")","")
-            code = code.replace(",","").replace("{","").replace("}","")
-            return code
-        def parse_chat_python(output, signature):
-            codes = []
-            star_code = False
-            code = []
-            for line in output.splitlines():
-                if line.startswith("```") and star_code == False:
-                    star_code = True
-                elif line.startswith("```") and star_code == True:
-                    star_code = False
-                    codes.append("\n".join(code[1:]))
-                    code = []
-                
-                if star_code:
-                    code.append(line)
-            
-            if code:
-                codes.append("\n".join(code[1:]))
-            
-            results = ["$ERROR$"]
-            pure_signature = _pure(signature.split("(")[0])
-            for code in codes:
-                result_lines = []
-                star_function = False
-                stop_function = False
-                for line in code.splitlines():
-                    pure_line = _pure(line)
-                    if pure_signature in pure_line:
-                        star_function = True
-                    if star_function and line.startswith("    return"):
-                        result_lines.append(line)
-                        stop_function = True
-                    if star_function and not stop_function:
-                        result_lines.append(line)
-                    if stop_function:
-                        break
-                result = "\n".join(result_lines)
-                results.append(result)
-            results.sort(key=len)
-            return results[-1]
-        
-        generation = parse_chat_python(generation, self.dataset["train"][idx]["function_signature"])
+        def extract_code_block(gen, pattern):
+            try:
+                code_block = re.findall(pattern, gen, re.DOTALL | re.IGNORECASE)[0]
+                return code_block
+            except (IndexError, TypeError):
+                return None
         prompt = self.dataset["train"][idx]["prompt"].split(self.dataset["train"][idx]["function_signature"])
+        import_str = ""
         if len(prompt) == 2:
-            generation = prompt[0] + "\n" + generation
+            import_str = prompt[0]
+        
+        patterns = [
+            r'```python\n(.*?)```',
+            r'```\n(.*?)```',
+            r'\[PYTHON\]\n(.*?)\[/PYTHON\]'
+        ]
+        
+        for pattern in patterns:
+            code_block = extract_code_block(generation, pattern)
+            if code_block is not None:
+                return import_str + code_block
+        
+        if generation is None:
+            return "$ERROR$"
         return generation
+    
     
     def evaluate(self, generations):
         def estimator(n: int, c: int, k: int) -> float:
@@ -166,6 +143,7 @@ class MultiplePython(Task):
             return np.array([estimator(n, c, 1), estimator(n, c, 5), estimator(n, c, 10), estimator(n, c, 20), estimator(n, c, 100)])
 
         temp_dir = tempfile.gettempdir()
+        [os.remove(p) for p in Path(temp_dir).glob("*.results.json")]
         list_files = []
         for generation in tqdm(generations, total=len(generations)):
             idx = generation["task_idx"]

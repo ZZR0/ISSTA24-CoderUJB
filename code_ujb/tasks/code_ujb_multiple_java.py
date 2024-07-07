@@ -155,6 +155,7 @@ class MultipleJava(Task):
             return np.array([estimator(n, c, 1), estimator(n, c, 5), estimator(n, c, 10), estimator(n, c, 20), estimator(n, c, 100)])
 
         temp_dir = tempfile.gettempdir()
+        [os.remove(p) for p in Path(temp_dir).glob("*.results.json")]
         list_files = []
         for generation in tqdm(generations, total=len(generations)):
             idx = generation["task_idx"]
