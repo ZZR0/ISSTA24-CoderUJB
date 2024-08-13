@@ -182,10 +182,10 @@ def get_model_answers(
                               "tstamp": time.time(),
                               "model_id": model_id})
 
-        # Dump answers
-        with open(os.path.expanduser(save_generations_path), "a") as fout:
-            for outputs in tasks_outputs:
-                fout.write(json.dumps(outputs) + "\n")
+    # Dump answers
+    with open(os.path.expanduser(save_generations_path), "a") as fout:
+        for outputs in tasks_outputs:
+            fout.write(json.dumps(outputs) + "\n")
 
 def get_stop_str(tokenizer):
     messages = [
