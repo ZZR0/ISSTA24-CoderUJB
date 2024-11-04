@@ -80,7 +80,7 @@ def get_answer(
     temperature = args.temperature
     
     if model in OPENAI_MODEL_ID:
-        api_url = os.getenv('OPENAI_API_BASE', 'https://api.openai.com/v1')
+        api_url = os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1')
         api_key = os.getenv('OPENAI_API_KEY', '')
         if api_key == "":
             raise ValueError("Please set OPENAI_API_KEY.")

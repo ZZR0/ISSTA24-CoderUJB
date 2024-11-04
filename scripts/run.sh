@@ -18,6 +18,7 @@
 ./scripts/run_code_ujb.sh api_gen chat codeujbtestgenissue gpt-3.5-turbo gpt-3.5-turbo
 ./scripts/run_code_ujb.sh api_gen chat codeujbrepair gpt-3.5-turbo gpt-3.5-turbo
 ./scripts/run_code_ujb.sh api_gen chat codeujbdefectdetection gpt-3.5-turbo gpt-3.5-turbo
+./scripts/run_code_ujb.sh api_gen chat lcb-gc-v1 gpt-3.5-turbo gpt-3.5-turbo
 
 ### 4. Evaluation
 ./scripts/run_code_ujb.sh eval complete codeujbcomplete ./models/codellama-7b/ codellama-7b

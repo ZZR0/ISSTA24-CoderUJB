@@ -18,7 +18,7 @@ from pathlib import Path
 
 from code_ujb.Task import Task, clean_signature
 from datasets import load_dataset
-from code_ujb.custom_metrics.evaluation import evaluate_problem
+from code_ujb.tasks.custom_metrics.multiple_metrics.evaluation import evaluate_problem
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 

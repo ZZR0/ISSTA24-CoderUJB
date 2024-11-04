@@ -22,7 +22,7 @@ from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from code_ujb.Task import Task
-from code_ujb.custom_metrics.execute import check_correctness
+from code_ujb.tasks.custom_metrics.execute import check_correctness
 
 _CITATION = """
 @article{austin2021program,

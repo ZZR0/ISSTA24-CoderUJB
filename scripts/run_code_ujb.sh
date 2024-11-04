@@ -9,7 +9,7 @@ function api_gen() {
     model_name_or_path=$4
     run_id=$5
 
-    num_samples=20
+    num_samples=4
 
     if [ $dataset == "codeujbdefectdetection" ]; then
         num_samples=1
@@ -130,12 +130,12 @@ function eval() {
     model_name_or_path=$4
     run_id=$5
 
-    python3 code_ujb/evaluate.py \
+    python3 code_ujb/evaluation.py \
         --model-path $model_name_or_path \
         --model-id $run_id \
         --gen-mode $gen_mode \
         --bench-name $dataset \
-        --num-samples 20 \
+        --num-samples 4 \
         --load-generations-path $project_dir/log/$run_id/$dataset/generations-${suffix}-${gen_mode}.json \
         --eval-output-path $project_dir/log/$run_id/$dataset/evaluation-${suffix}-${gen_mode}.json
         

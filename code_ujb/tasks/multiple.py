@@ -55,6 +55,27 @@ LANGUAGES = [
     "swift",
     "ts",
 ]
+LANGUAGES2MD = {
+    "py": "python",
+    "sh": "bash",
+    "cpp": "cpp",
+    "cs": "csharp",
+    "d": "d",
+    "go": "go",
+    "java": "java",
+    "js": "javascript",
+    "jl": "julia",
+    "lua": "lua",
+    "pl": "perl",
+    "php": "php",
+    "r": "r",
+    "rkt": "racket",
+    "rb": "ruby",
+    "rs": "rust",
+    "scala": "scala",
+    "swift": "swift",
+    "ts": "typescript",
+}
 
 
 def create_all_tasks():
@@ -122,7 +143,10 @@ class GeneralMultiPLE(Task):
         return doc["prompt"].strip()
 
     def get_prompt_chat(self, doc):
-        raise NotImplementedError()
+        prompt = f"### Question:\n{doc['prompt'].strip()}\n\n"
+        prompt += f"### Format: ```{LANGUAGES2MD[self.language]}\n# YOUR CODE HERE\n```\n\n"
+        prompt += f"### Answer: (return the remaining function code in the provided format with backticks)\n\n"
+        return prompt
 
     def get_reference(self, doc):
         """Builds the reference solution for the doc (sample from the test dataset)."""
@@ -149,7 +173,29 @@ class GeneralMultiPLE(Task):
         return prompt + self._stop_at_stop_token(completion, self.stop_words)
 
     def postprocess_generation_chat(self, generation, idx):
-        raise NotImplementedError()
+        prompt = self.get_prompt(self.get_dataset()[idx])
+        def extract_code_block(gen, pattern):
+            try:
+                code_block = re.findall(pattern, gen, re.DOTALL | re.IGNORECASE)[0]
+                return code_block
+            except (IndexError, TypeError):
+                return None
+        
+        patterns = [
+            r'```%s\n(.*?)```' % LANGUAGES2MD[self.language],
+            r'```\n(.*?)```',
+            r'\[%s\]\n(.*?)\[/%s\]' % (LANGUAGES2MD[self.language], LANGUAGES2MD[self.language])
+        ]
+        
+        all_code_blocks = []
+        for pattern in patterns:
+            code_block = extract_code_block(generation, pattern)
+            if code_block is not None:
+                all_code_blocks.append(code_block)
+        if len(all_code_blocks) == 0:
+            return generation if generation is not None else "$ERROR$"
+        all_code_blocks.sort(key=lambda x: len(x), reverse=True)
+        return prompt + all_code_blocks[0]
 
     def process_results(self, generations, references):
         """Takes the list of LM generations and evaluates them against ground truth references,

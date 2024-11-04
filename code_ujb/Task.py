@@ -62,12 +62,15 @@ class Task(ABC):
     
     def get_prompt_byidx(self, idx, mode="complete"):
         """Builds the prompt for the LM to generate from."""
-        return self.get_prompt(self.get_dataset()[idx])
-
+        return self.get_prompt(self.get_dataset()[idx], mode=mode)
+    
     def get_id_byidx(self, idx):
         """Builds the prompt for the LM to generate from."""
         return idx
 
+    def get_stream_stop(self, idx, mode="complete"):
+        return None
+    
     @abstractmethod
     def get_dataset(self):
         """Returns dataset for the task or an iterable of any object, that get_prompt can handle"""

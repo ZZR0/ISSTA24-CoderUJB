@@ -14,7 +14,7 @@ from . import (apps, codexglue_code_to_text, codexglue_text_to_text, conala,
                concode, ds1000, gsm, humaneval, humanevalplus, humanevalpack,
                instruct_humaneval, instruct_wizard_humaneval, mbpp, mbppplus,
                multiple, parity, python_bugs, quixbugs, recode, santacoder_fim,
-               studenteval, mercury, crosscodeeval, birdsql, spider)
+               studenteval, mercury, crosscodeeval, birdsql, spider, livecodebench)
 
 TASK_REGISTRY = {
     "codeujbrepair": code_ujb_repair.CodeUJBRepair,
@@ -51,6 +51,7 @@ TASK_REGISTRY = {
     **crosscodeeval.create_all_tasks(),
     **birdsql.create_all_tasks(),
     "spider": spider.Spider,
+    **livecodebench.create_all_tasks(),
 }
 
 ALL_TASKS = sorted(list(TASK_REGISTRY))
