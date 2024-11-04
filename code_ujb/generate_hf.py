@@ -53,7 +53,7 @@ def run_generate(
         if question_begin>=0: 
             if i < question_begin: continue
         if question_end>=0: 
-            if i >= question_end: continue
+            if i > question_end: continue
         # Copy the question `n_copy` times
         for _ in range(n_copy):
             all_tasks.append({
@@ -61,12 +61,12 @@ def run_generate(
                 "task_id": task_bench.get_id_byidx(i),
                 "question": task_bench.get_prompt_byidx(i, mode=gen_mode),
             })
-    
+    print("Generate %d tasks" % len(all_tasks))
     num_world = num_gpus_total // num_gpus_per_model
     num_pad = (num_world - (len(all_tasks) % num_world)) % num_world
     random.shuffle(all_tasks)
     all_tasks.extend(all_tasks[:num_pad])
-    chunk_size = len(all_tasks) // num_world
+    chunk_size = max(len(all_tasks) // num_world, 1)
     ans_handles = []
     for i in range(0, len(all_tasks), chunk_size):
         ans_handles.append(
@@ -157,7 +157,7 @@ def get_model_answers(
                 do_sample=do_sample,
                 temperature=temperature,
                 max_new_tokens=max_new_tokens,
-                num_return_sequences=batch_size,
+                num_return_sequences=batch_size if do_sample else 1,
             )
             
             if gen_mode == "complete":
@@ -167,6 +167,8 @@ def get_model_answers(
                                             tokenizer=tokenizer)
             else:
                 raise NotImplementedError
+            if len(outputs) < batch_size:
+                outputs = outputs + [outputs[0]] * (batch_size - len(outputs))
             
         except RuntimeError as e:
             print("ERROR question ID: ", task["task_idx"])

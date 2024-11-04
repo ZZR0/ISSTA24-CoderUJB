@@ -29,7 +29,7 @@ def run_evaluate(
             
     if gen_mode == "complete":
         for generation in generations:
-            outputs = task_bench.postprocess_complete_generations(generation["outputs"], generation["task_idx"])
+            outputs = task_bench.postprocess_generations(generation["outputs"], generation["task_idx"], mode="complete")
             inputs = [task_bench.get_prompt_byidx(generation["task_idx"], mode="complete")]*len(outputs)
             raw_outputs = []
             for _input, pure_output, output in zip(inputs, outputs, generation["outputs"]):
@@ -45,7 +45,7 @@ def run_evaluate(
             
     elif gen_mode == "chat":
         for generation in generations:
-            outputs = task_bench.postprocess_chat_generations(generation["outputs"], generation["task_idx"])
+            outputs = task_bench.postprocess_generations(generation["outputs"], generation["task_idx"], mode="chat")
             inputs = [task_bench.get_prompt_byidx(generation["task_idx"], mode="chat")]*len(generation["outputs"])
             raw_outputs = []
             for _input, pure_output, output in zip(inputs, outputs, generation["outputs"]):

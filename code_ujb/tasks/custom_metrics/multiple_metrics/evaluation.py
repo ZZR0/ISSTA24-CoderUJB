@@ -1,5 +1,7 @@
+from copy import deepcopy
 import json
 import os
+import random
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -32,21 +34,15 @@ def cache_set(program: str, result: dict):
 
 def cached_eval_script(problem, index) -> dict:
     # here prompt is already included in completions
+    time.sleep(random.uniform(0.0, 0.5))
     program = problem["completions"][index] + "\n" + problem["tests"]
-    CACHE_LOCK.acquire(True)
-    cached = cache_get(program)
-    if cached is not None:
-        CACHE_LOCK.release()
-        return cached
-    else:
-        result_yaml = dict()
-        cache_set(program, result_yaml)
-        CACHE_LOCK.release()
-        result_dict = eval_string_script(problem["language"], program)
-        for k in result_dict.keys():
-            result_yaml[k] = result_dict[k]
-            result_yaml["timestamp"] = int(time.time())
-        return result_yaml
+    result_yaml = dict()
+    result_yaml["g_idx"] = index
+    result_dict = eval_string_script(problem["language"], program)
+    for k in result_dict.keys():
+        result_yaml[k] = result_dict[k]
+        result_yaml["timestamp"] = int(time.time())
+    return result_yaml
 
 
 def get_test_results_json_path(
@@ -77,13 +73,12 @@ def evaluate_problem(
     test_results["results"] = []
 
     num_problems = len(problem["completions"])
-    min_problem = len(test_results["results"])
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        for j in executor.map(
+        for result in executor.map(
             lambda index: cached_eval_script(problem, index),
-            range(min_problem, num_problems),
+            range(0, num_problems),
         ):
-            test_results["results"].append(j)
-            with open(test_results_path, "w") as f:
-                f.write(json.dumps(test_results, indent=2))
+            test_results["results"].append(result)
+
+    return test_results

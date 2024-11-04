@@ -57,15 +57,12 @@ class CodeUJBRepair(Task):
         """Returns dataset for the task or an iterable of any object, that get_prompt can handle"""
         return self.dataset["train"]
 
-    def get_prompt(self, doc, mode="complete"):
+    def get_prompt_complete(self, doc):
         """Builds the prompt for the LM to generate from."""
-        if mode == "complete":
-            prompt_key = "prompt_complete"
-        elif mode == "chat":
-            prompt_key = "prompt_chat"
-        else:
-            raise KeyError()
-        return doc[prompt_key].strip()
+        return doc["prompt_complete"].strip()
+    
+    def get_prompt_chat(self, doc):
+        return doc["prompt_chat"].strip()
     
     def get_prompt_byidx(self, idx, mode="complete"):
         """Builds the prompt for the LM to generate from."""
@@ -100,13 +97,7 @@ class CodeUJBRepair(Task):
             generation = generation[:char_idx+1]
         return generation
 
-    def postprocess_complete_generations(self, generations, idx):
-        return [self.postprocess_complete_generation(gen, idx) for gen in generations]
-    
-    def postprocess_chat_generations(self, generations, idx):
-        return [self.postprocess_chat_generation(gen, idx) for gen in generations]
-    
-    def postprocess_complete_generation(self, generation, idx):
+    def postprocess_generation_complete(self, generation, idx):
         """Defines the postprocessing for a LM generation.
         :param generation: str
             code generation from LM
@@ -122,7 +113,7 @@ class CodeUJBRepair(Task):
         # print("generation", generation)
         return generation
     
-    def postprocess_chat_generation(self, generation, idx):
+    def postprocess_generation_chat(self, generation, idx):
         signature = self.dataset["train"][idx]["function_signature"].strip()
         
         pre_signature, sub_signature = clean_signature(signature)

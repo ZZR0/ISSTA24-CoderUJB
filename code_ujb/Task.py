@@ -52,11 +52,21 @@ class Task(ABC):
         self.requires_execution = requires_execution
         try:
             if hasattr(self, "dataset") and self.dataset is None: raise Exception("Use locally downloaded dataset.")
-            self.dataset = load_dataset(path=self.DATASET_PATH, name=self.DATASET_NAME)
-        except:
+            revision = self.DATASET_REVISION if hasattr(self, "DATASET_REVISION") else None
+            self.dataset = load_dataset(path=self.DATASET_PATH, name=self.DATASET_NAME, revision=revision, trust_remote_code=True)
+        except Exception as e:
+            print(e)
             warn(
                 "This task will use a locally downloaded dataset, not from the HF hub."
             )
+    
+    def get_prompt_byidx(self, idx, mode="complete"):
+        """Builds the prompt for the LM to generate from."""
+        return self.get_prompt(self.get_dataset()[idx])
+
+    def get_id_byidx(self, idx):
+        """Builds the prompt for the LM to generate from."""
+        return idx
 
     @abstractmethod
     def get_dataset(self):
@@ -67,13 +77,14 @@ class Task(ABC):
         """Loads and returns the few-shot examples for the task if they exist."""
         pass
 
-    @abstractmethod
-    def get_prompt(self, doc):
-        """Builds the prompt for the LM to generate from.
-        :param doc: dict[str: str]
-            sample from the test dataset
-        """
-        pass
+    def get_prompt(self, doc, mode="complete"):
+        """Builds the prompt for the LM to generate from."""
+        if mode == "complete":
+            return self.get_prompt_complete(doc)
+        elif mode == "chat":
+            return self.get_prompt_chat(doc)
+        else:
+            raise KeyError()
 
     @abstractmethod
     def get_reference(self, doc):
@@ -83,27 +94,41 @@ class Task(ABC):
         """
         pass
 
-    @abstractmethod
-    def postprocess_complete_generation(self, generation, idx):
-        """Defines the postprocessing for a LM generation.
-        :param generation: str
-            code generation from LM
-        :param idx: int
-            index of doc in the dataset to which the generation belongs
-        """
-        pass
+    def postprocess_generations(self, generations, idx, mode="complete"):
+        if mode == "complete":
+            return [self.postprocess_generation_complete(gen, idx) for gen in generations]
+        elif mode == "chat":
+            return [self.postprocess_generation_chat(gen, idx) for gen in generations]
+        else:
+            raise KeyError()
     
     @abstractmethod
-    def postprocess_chat_generation(self, generation, idx):
-        """Defines the postprocessing for a LM generation.
-        :param generation: str
-            code generation from LM
-        :param idx: int
-            index of doc in the dataset to which the generation belongs
+    def process_results(self, generations, references):
+        """Takes the list of LM generations and evaluates them against ground truth references,
+        returning the metric for the generations as in {"metric_name": result}.
+        :param generations: list(list(str))
+            list of lists containing generations
+        :param references: list(str)
+            list of str containing refrences
+        :return: dict[str: float]
         """
         pass
 
-    @abstractmethod
+    @staticmethod
+    def _stop_at_stop_token(decoded_string, stop_tokens):
+        """
+        Produces the prefix of decoded_string that ends at the first occurrence of
+        a stop_token.
+        WARNING: the decoded_string *must not* include the prompt, which may have stop tokens
+        itself.
+        """
+        min_stop_index = len(decoded_string)
+        for stop_token in stop_tokens:
+            stop_index = decoded_string.find(stop_token)
+            if stop_index != -1 and stop_index < min_stop_index:
+                min_stop_index = stop_index
+        return decoded_string[:min_stop_index]
+
     def evaluate(self, generations):
         """Takes the list of LM generations and evaluates them against ground truth references,
         returning the metric for the generations as in {"metric_name": result}.
@@ -111,4 +136,6 @@ class Task(ABC):
             list of lists containing generations
         :return: dict[str: float]
         """
-        pass
+        references = [self.get_reference(self.get_dataset()[gen["task_idx"]]) for gen in generations]
+        generations = [gen["outputs"] for gen in generations]
+        return self.process_results(generations, references)

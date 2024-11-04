@@ -18,7 +18,7 @@ from pathlib import Path
 
 from code_ujb.Task import Task, clean_signature
 from datasets import load_dataset
-from code_ujb.tasks.multiple_metrics.evaluation import evaluate_problem
+from code_ujb.custom_metrics.evaluation import evaluate_problem
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
@@ -48,15 +48,12 @@ class MultiplePython(Task):
         """Returns dataset for the task or an iterable of any object, that get_prompt can handle"""
         return self.dataset["train"]
 
-    def get_prompt(self, doc, mode="complete"):
+    def get_prompt_complete(self, doc):
         """Builds the prompt for the LM to generate from."""
-        if mode == "complete":
-            prompt_key = "prompt_complete"
-        elif mode == "chat":
-            prompt_key = "prompt_chat"
-        else:
-            raise KeyError()
-        return doc[prompt_key].strip()
+        return doc["prompt_complete"].strip()
+    
+    def get_prompt_chat(self, doc):
+        return doc["prompt_chat"].strip()
     
     def get_prompt_byidx(self, idx, mode="complete"):
         """Builds the prompt for the LM to generate from."""
@@ -73,13 +70,7 @@ class MultiplePython(Task):
         """Builds the reference solution for the doc (sample from the test dataset)."""
         return doc["function"]
 
-    def postprocess_complete_generations(self, generations, idx):
-        return [self.postprocess_complete_generation(gen, idx) for gen in generations]
-    
-    def postprocess_chat_generations(self, generations, idx):
-        return [self.postprocess_chat_generation(gen, idx) for gen in generations]
-        
-    def postprocess_complete_generation(self, generation, idx):
+    def postprocess_generation_complete(self, generation, idx):
         """Defines the postprocessing for a LM generation.
         :param generation: str
             code generation from LM
@@ -96,7 +87,7 @@ class MultiplePython(Task):
         generation = generation.split("\ndef ")[0]
         return prefix + function_signature + generation
 
-    def postprocess_chat_generation(self, generation, idx):
+    def postprocess_generation_chat(self, generation, idx):
         def extract_code_block(gen, pattern):
             try:
                 code_block = re.findall(pattern, gen, re.DOTALL | re.IGNORECASE)[0]
@@ -143,7 +134,7 @@ class MultiplePython(Task):
             return np.array([estimator(n, c, 1), estimator(n, c, 5), estimator(n, c, 10), estimator(n, c, 20), estimator(n, c, 100)])
 
         temp_dir = tempfile.gettempdir()
-        [os.remove(p) for p in Path(temp_dir).glob("*.results.json")]
+        [os.remove(p) for p in Path(temp_dir).glob("*.json")]
         list_files = []
         for generation in tqdm(generations, total=len(generations)):
             idx = generation["task_idx"]
@@ -166,14 +157,16 @@ class MultiplePython(Task):
             f"Saved {len(list_files)} problems in {temp_dir} for evaluation, each problem has {len(generations[0]['outputs'])} completions"
         )
 
+        all_results = []
         # execute the problems to evaluate them
-        max_workers = os.cpu_count() - 1 if os.cpu_count() > 1 else 1
+        max_workers = os.cpu_count()//2 if os.cpu_count() > 2 else 1
         for file in tqdm(list_files):
-            evaluate_problem(temp_dir, file, max_workers)
+            one_results = evaluate_problem(temp_dir, file, max_workers)
+            all_results.append(one_results)
 
         # compute pass@k scores
         result_array = np.array(
-            [for_file(p) for p in Path(temp_dir).glob("*.results.json")]
+            [for_file(r, k=[1, 2, 5, 10, 20, 40, 50, 80, 100]) for r in all_results]
         )
         result = result_array.mean(axis=0)
         name = (
@@ -183,7 +176,9 @@ class MultiplePython(Task):
         )
         results = {
             f"pass@{k}": v
-            for k, v in zip([1, 5, 10, 20, 100], result)
-            if k <= len(generations[0]['outputs'])
+            for k, v in zip([1, 2, 5, 10, 20, 40, 50, 80, 100], result)
+            if k <= len(generations[0])
         }
+        [os.remove(p) for p in Path(temp_dir).glob("*.json")]
+        os.removedirs(temp_dir)
         return results

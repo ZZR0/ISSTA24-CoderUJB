@@ -22,7 +22,7 @@ from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from code_ujb.Task import Task
-from code_ujb.execute import check_correctness
+from code_ujb.custom_metrics.execute import check_correctness
 
 _CITATION = """
 @article{austin2021program,
@@ -126,18 +126,12 @@ class MBPP(Task):
         ), "please ensure you have the latest version of MBPP dataset, try deleting its old cache"
         return dataset
 
-    def get_prompt(self, doc, mode="complete"):
-        """Builds the prompt for the LM to generate from.
-        MBPP prompt is built following to InCoder (Fried et al.) approach
-        prompt = docstring that includes one test
-        """
-        if mode == "complete":
-            prompt_key = "prompt_complete"
-        elif mode == "chat":
-            prompt_key = "prompt_chat"
-        else:
-            raise KeyError()
-        return doc[prompt_key].strip()
+    def get_prompt_complete(self, doc):
+        """Builds the prompt for the LM to generate from."""
+        return doc["prompt_complete"].strip()
+    
+    def get_prompt_chat(self, doc):
+        return doc["prompt_chat"].strip()
     
     def get_prompt_byidx(self, idx, mode="complete"):
         """Builds the prompt for the LM to generate from."""
@@ -154,13 +148,7 @@ class MBPP(Task):
         """Builds the reference solution for the doc (sample from the test dataset)."""
         return "\n".join(self.get_dataset()[idx]["test_list"])
 
-    def postprocess_complete_generations(self, generations, idx):
-        return [self.postprocess_complete_generation(gen, idx) for gen in generations]
-    
-    def postprocess_chat_generations(self, generations, idx):
-        return [self.postprocess_chat_generation(gen, idx) for gen in generations]
-
-    def postprocess_complete_generation(self, generation, idx):
+    def postprocess_generation_complete(self, generation, idx):
         """Defines the postprocessing for a LM generation.
         :param generation: str
             code generation from LM
@@ -180,7 +168,7 @@ class MBPP(Task):
             generation = generation.split(stop_word)[0]
         return function_signature + generation
 
-    def postprocess_chat_generation(self, generation, idx):
+    def postprocess_generation_chat(self, generation, idx):
         def extract_code_block(gen, pattern):
             try:
                 code_block = re.findall(pattern, gen, re.DOTALL | re.IGNORECASE)[0]
