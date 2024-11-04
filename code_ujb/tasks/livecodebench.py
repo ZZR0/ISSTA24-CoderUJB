@@ -59,8 +59,7 @@ class LiveCodeBench_CG_Base(Task):
         
     def get_dataset(self):
         """Returns dataset for the task or an iterable of any object, that get_prompt can handle"""
-        
-        return self.dataset[:20]
+        return self.dataset
 
     def get_prompt_complete(self, doc):
         """Builds the prompt for the LM to generate from."""
