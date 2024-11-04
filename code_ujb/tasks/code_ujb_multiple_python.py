@@ -103,7 +103,7 @@ class MultiplePython(Task):
                 return code_block
             except (IndexError, TypeError):
                 return None
-        prompt = self.dataset["train"][idx]["prompt"].split(self.dataset["train"][idx]["function_signature"])
+        prompt = self.get_dataset()[idx]["prompt"].split(self.get_dataset()[idx]["function_signature"])
         import_str = ""
         if len(prompt) == 2:
             import_str = prompt[0]
